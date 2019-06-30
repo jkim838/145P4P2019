@@ -1,0 +1,3 @@
+[submodule "DarkNet"]
+	path = DarkNet
+	url = https://github.com/jkim838/darknet_ros.git
