@@ -1,3 +1,6 @@
 [submodule "DarkNet"]
 	path = DarkNet
 	url = https://github.com/jkim838/darknet_ros.git
+[submodule "video_stream_opencv"]
+	path = video_stream_opencv
+	url = https://github.com/jkim838/video_stream_opencv.git
