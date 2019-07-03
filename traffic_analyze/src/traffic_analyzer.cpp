@@ -16,7 +16,7 @@ int getch()
   static struct termios oldt, newt;
   tcgetattr( STDIN_FILENO, &oldt);           // save old settings
   newt = oldt;
-  newt.c_lflag &= ~(ICANON);                 // disable buffering      
+  newt.c_lflag &= ~(ICANON);                 // disable buffering
   tcsetattr( STDIN_FILENO, TCSANOW, &newt);  // apply new settings
 
   int c = getchar();  // read character (non-blocking)
@@ -45,15 +45,19 @@ int main(int argc, char **argv)
     int keystroke = getch();
 
     if(keystroke == 's'){
+     printf("FOUND A KEYSTROKE: %d", keystroke);
+     std::ofstream myfile("example.csv");
 
-     std::ofstream myfile;
-     myfile.open ("example.csv");
+     printf("FILE IS OPEN: %d \n", myfile.is_open());
      myfile << "This is the first cell in the first column.\n";
      myfile << "a,b,c,\n";
      myfile << "c,s,v,\n";
      myfile << "1,2,3.456\n";
      myfile << "semi;colon";
      myfile.close();
+     printf("FILE IS CLOSED: %d \n", myfile.is_open());
+
+     printf("END OF FILE");
     }
 
     // Publish info
@@ -61,8 +65,7 @@ int main(int argc, char **argv)
 
     loop_rate.sleep();
   }
-  
+
   return 0;
 
 }
-
