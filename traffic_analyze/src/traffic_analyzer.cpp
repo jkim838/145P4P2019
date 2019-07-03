@@ -6,10 +6,17 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/UInt32.h>
 #include <std_msgs/UInt64.h>
+#include <std_msgs/Int8.h>
 #include <sensor_msgs/Image.h>
+// #include <darknet_ros_msgs/BoundingBoxes.h>
+// #include <darknet_ros_msgs/BoundingBox.h>
+// #include <darknet_ros_msgs/CheckForObjectsAction.h>
 #include <math.h>
 #include <termios.h>    //termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>     //STDIN_FILENO
+
+std_msgs::Int8 vehicle_count;
+int vehicle_count_integer;
 
 int getch()
 {
@@ -26,6 +33,12 @@ int getch()
   return c;
 }
 
+void count_object_no(const std_msgs::Int8::ConstPtr& count_value){
+  vehicle_count.data = count_value->data;
+  vehicle_count_integer = vehicle_count.data;
+  //ROS_INFO("RECEIVED: : %d\n", count_value->data);
+}
+
 int main(int argc, char **argv)
 {
 
@@ -33,7 +46,7 @@ int main(int argc, char **argv)
   ros::NodeHandle ta_nh;
 
   // Subscriber Declaration
-  // ros::Susbscriber ta_coordinate_sub = ta_nh.subscribe("/TopicName1", 10, function_name1);
+  ros::Subscriber ta_coordinate_sub = ta_nh.subscribe("/darknet_ros/found_object", 10, count_object_no);
   // ros::Subscriber ta_array_size_sub = ta_nh.subscribe("/TopicName2", 10, function_name2);
 
   // Publisher Declaration
@@ -49,7 +62,7 @@ int main(int argc, char **argv)
      std::ofstream myfile("/home/master/catkin_ws/src/145P4P2019/csv/example.csv");
 
      printf("FILE IS OPEN: %d \n", myfile.is_open());
-     myfile << "Hello, this is a test file.\n";
+     myfile << "Vehicle Count: " << vehicle_count_integer << ".";
      myfile.close();
      printf("FILE IS CLOSED: %d \n", myfile.is_open());
 
