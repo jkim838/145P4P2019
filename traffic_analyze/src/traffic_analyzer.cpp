@@ -67,7 +67,7 @@ int main(int argc, char **argv)
      std::time_t record_time_formatted = std::chrono::system_clock::to_time_t(record_time);
      std::string start_time_string = std::ctime(&start_time_formatted);
      std::string record_time_string = std::ctime(&record_time_formatted);
-     std::ofstream export_csv("/home/master/catkin_ws/src/145P4P2019/csv/"+record_time_string+".csv");
+     std::ofstream export_csv("/home/master/catkin_ws/src/145P4P2019/csv/"+start_time_string+".csv");
      printf("FILE IS OPEN: %d \n", export_csv.is_open());
      export_csv << "Start:," << start_time_string;
      export_csv << "End:," << record_time_string;
