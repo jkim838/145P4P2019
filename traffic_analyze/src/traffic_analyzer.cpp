@@ -8,12 +8,12 @@
 #include <std_msgs/UInt64.h>
 #include <std_msgs/Int8.h>
 #include <sensor_msgs/Image.h>
-// #include <darknet_ros_msgs/BoundingBoxes.h>
-// #include <darknet_ros_msgs/BoundingBox.h>
-// #include <darknet_ros_msgs/CheckForObjectsAction.h>
 #include <math.h>
 #include <termios.h>    //termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>     //STDIN_FILENO
+#include <chrono>
+#include <ctime>
+#include "boost/date_time/posix_time/posix_time.hpp"
 
 std_msgs::Int8 vehicle_count;
 int vehicle_count_integer;
@@ -43,6 +43,10 @@ int main(int argc, char **argv)
 {
 
   ros::init(argc, argv, "traffic_analyzer");
+
+  auto start_time = std::chrono::system_clock::now();
+  std::time_t start_time_formatted = std::chrono::system_clock::to_time_t(start_time);
+
   ros::NodeHandle ta_nh;
 
   // Subscriber Declaration
@@ -59,12 +63,17 @@ int main(int argc, char **argv)
 
     if(keystroke == 's'){
      printf("FOUND A KEYSTROKE: %d\n", keystroke);
-     std::ofstream myfile("/home/master/catkin_ws/src/145P4P2019/csv/example.csv");
-
-     printf("FILE IS OPEN: %d \n", myfile.is_open());
-     myfile << "Vehicle Count: " << vehicle_count_integer << ".";
-     myfile.close();
-     printf("FILE IS CLOSED: %d \n", myfile.is_open());
+     auto record_time = std::chrono::system_clock::now();
+     std::time_t record_time_formatted = std::chrono::system_clock::to_time_t(record_time);
+     std::string start_time_string = std::ctime(&start_time_formatted);
+     std::string record_time_string = std::ctime(&record_time_formatted);
+     std::ofstream export_csv("/home/master/catkin_ws/src/145P4P2019/csv/"+record_time_string+".csv");
+     printf("FILE IS OPEN: %d \n", export_csv.is_open());
+     export_csv << "Start:," << start_time_string;
+     export_csv << "End:," << record_time_string;
+     export_csv << "Count:," << vehicle_count_integer;
+     export_csv.close();
+     printf("FILE IS CLOSED: %d \n", export_csv.is_open());
 
      printf("END OF FILE\n");
     }
