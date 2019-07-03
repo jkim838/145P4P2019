@@ -45,19 +45,15 @@ int main(int argc, char **argv)
     int keystroke = getch();
 
     if(keystroke == 's'){
-     printf("FOUND A KEYSTROKE: %d", keystroke);
-     std::ofstream myfile("example.csv");
+     printf("FOUND A KEYSTROKE: %d\n", keystroke);
+     std::ofstream myfile("/home/master/catkin_ws/src/145P4P2019/csv/example.csv");
 
      printf("FILE IS OPEN: %d \n", myfile.is_open());
-     myfile << "This is the first cell in the first column.\n";
-     myfile << "a,b,c,\n";
-     myfile << "c,s,v,\n";
-     myfile << "1,2,3.456\n";
-     myfile << "semi;colon";
+     myfile << "Hello, this is a test file.\n";
      myfile.close();
      printf("FILE IS CLOSED: %d \n", myfile.is_open());
 
-     printf("END OF FILE");
+     printf("END OF FILE\n");
     }
 
     // Publish info

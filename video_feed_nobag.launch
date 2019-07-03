@@ -52,6 +52,5 @@
   <node pkg="traffic_analyze" type="traffic_analyze_node" name="traffic_analyze_node" output="screen">
   </node>
 
-  <node name="record_topics_for_verification" pkg="rosbag" type="record" args="-o /home/master/catkin_ws/src/145P4P2019/bags/ darknet_ros/bounding_boxes --split --duration 1m" output="screen"/>
  <!--<node name="republish" type="republish" pkg="image_transport" output="screen" 	args="compressed in:=/front_camera/image_raw raw out:=/camera/image_raw" /> -->
 </launch>
