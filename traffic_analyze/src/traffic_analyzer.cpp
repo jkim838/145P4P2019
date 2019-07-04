@@ -1,5 +1,7 @@
 #include <ros/ros.h>
+#include <ros/xmlrpc_manager.h>
 #include <stdio.h>
+#include <signal.h>
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -18,16 +20,24 @@
 
 int vehicle_count_integer;
 int detection_id = 0;
+// Signal-safe flag for whether shutdown is requested
+sig_atomic_t volatile g_request_shutdown = 0;
 
 /*** Function Prototypes ***/
 char getch();
 void count_object_no(const std_msgs::Int8::ConstPtr& count_value);
 void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
+void SIGNALHandler(int sig);
+void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
 
   ros::init(argc, argv, "traffic_analyzer");
+  signal((SIGINT|SIGTERM), SIGNALHandler);
+
+  // Override XMLRPC shutdown
+  ros::XMLRPCManager::instance()->unbind("shutdown");
+  ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
 
   // Get system time at the moment the node was launched...
   auto start_time = std::chrono::system_clock::now();
@@ -45,7 +55,8 @@ int main(int argc, char **argv)
   // ros::Publisher ta_pub = ta_nh.advertise<std_msgs::Uint64>("/TopicName", 10)
   ros::Rate loop_rate(10);
 
-  while(ros::ok()){
+  while(!g_request_shutdown){
+
     ros::spinOnce();
     int keystroke = getch();
 
@@ -58,10 +69,6 @@ int main(int argc, char **argv)
      std::time_t record_time_formatted = std::chrono::system_clock::to_time_t(record_time);
      std::string record_time_string = std::ctime(&record_time_formatted);
 
-     //std::string start_time_string = std::ctime(&start_time_formatted);
-
-     //std::ofstream export_csv("/home/master/catkin_ws/src/145P4P2019/csv/"+start_time_string+".csv");
-     //export_csv << "Start:," << start_time_string;
      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
      export_csv << "Start:," << start_time_string; //Record begin time...
      export_csv << "End:," << record_time_string;
@@ -71,6 +78,7 @@ int main(int argc, char **argv)
      std::rename("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",rename_file_to.c_str());
      std::ofstream generate_new_csv("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv");
      generate_new_csv.close();
+     detection_id = 0;
 
     }
 
@@ -78,9 +86,35 @@ int main(int argc, char **argv)
     // ta_pub.publish(value_to_publish);
 
     loop_rate.sleep();
+
   }
 
-  return 0;
+  std::remove("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv");
+  ros::shutdown();
+
+}
+
+// Replacement SIGINT handler
+void SIGNALHandler(int sig){
+
+  g_request_shutdown = 1;
+
+}
+
+// Replacement "shutdown" XMLRPC callback
+void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result){
+
+  int num_params = 0;
+  if (params.getType() == XmlRpc::XmlRpcValue::TypeArray)
+    num_params = params.size();
+  if (num_params > 1)
+  {
+    std::string reason = params[1];
+    ROS_WARN("Shutdown request received. Reason: [%s]", reason.c_str());
+    g_request_shutdown = 1; // Set flag
+  }
+
+  result = ros::xmlrpc::responseInt(1, "", 0);
 
 }
 
@@ -138,7 +172,7 @@ void count_object_no(const std_msgs::Int8::ConstPtr& count_value){
 
 void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){
 
-  // Builds well, but needs fixing in terms of logic.
+  // Negative coordinate error still persists....
   int min_x = bbox->bounding_boxes[2].xmin;
   int min_y = bbox->bounding_boxes[3].ymin;
   int max_x = bbox->bounding_boxes[4].xmax;
