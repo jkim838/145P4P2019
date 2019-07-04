@@ -5,6 +5,16 @@
 
 ## Dependencies
 
+###[YOLO ROS: Real-Time Object Dtection for ROS](https://github.com/leggedrobotics/darknet_ros)
+
+###[video_stream_opencv](https://github.com/jkim838/video_stream_opencv/tree/badebf62ec6718b2e208422a7d529a0396d26350)
+
+####[OpenCV](https://opencv.org/)
+
+####[Boost (c++ library)](https://www.boost.org/) 
+
+## Installation
+
 To be updated...
 
 ## Output Example
