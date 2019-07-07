@@ -5,9 +5,31 @@
 
 ## Overview
 
+### Table of Contents
+
+*  #### [Testing Environment](test_environment)
+
+*  #### [Dependencies](dependencies)
+
+*  #### [Installation](installation)
+
+   ##### [1. Setting up ROS Kinetic](setup_ros_kinetic)
+
+   ##### [2. Setting up ROS Workspace](setup_ros_ws)
+
+   ##### [3. Download YOLO v3 Weights](yolov3_download)
+
+   ##### [4. Launching the program](launch_program)
+
+*  #### [Output Examples](output_example)
+
+   ##### [Feed 1. Examples](example1)
+
+   ##### [Feed 2. Examples](example2)
+
 INTRO GOES HERE...
 
-### Testing Environment
+### Testing Environment <a name="test_environment></a>
 
   * OS: Ubuntu 16.04 LTS
   * ROS: Kinetic
@@ -18,7 +40,7 @@ INTRO GOES HERE...
   * CUDA Driver Version: 10.1
   * Memory: 16GB
 
-## Dependencies
+## Dependencies <a name="dependencies"></a>
 
 ### 1. [YOLO ROS: Real-Time Object Dtection for ROS](https://github.com/leggedrobotics/darknet_ros)
 
@@ -32,9 +54,9 @@ INTRO GOES HERE...
 
 ### 4. CUDA Driver (8.0 or above) for YOLO v3 Compatibility
 
-## Installation
+## Installation <a name="installation"></a>
 
-### 1. Setting Up ROS Kinetic
+### 1. Setting Up ROS Kinetic <a name="setup_ros_kinetic></a>
 
 For more detail, refer to official installation guide [here](http://wiki.ros.org/kinetic/Installation/Ubuntu)...
 
@@ -75,7 +97,7 @@ source ~/.bashrc
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
 ```
 
-### 2. Setting up ROS Workspace
+### 2. Setting up ROS Workspace <a name="setup_ros_ws"></a>
 
 #### **2.1. Creating catkin_ws**
 
@@ -113,7 +135,7 @@ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### **3. Downloading YOLO v3 Weights**
+### **3. Downloading YOLO v3 Weights** <a name="yolov3_download"></a>
 
 Detailed instructions can be found [here](https://pjreddie.com/darknet/yolo/)
 
@@ -129,7 +151,7 @@ Download YOLO v3 weights with following command,
 wget http://pjreddie.com/media/files/yolov3.weights
 ```
 
-### **4. Launching the program**
+### **4. Launching the program** <a name="launch_program"></a>
 
 Before the program can be launched, configuration file and video footage must be added. 
 
@@ -163,13 +185,14 @@ roslaunch video_feed.launch
 roslaunch video_feed_nobag.launch
 ```
 
-## Output Example
-### Feed 1 Examples...
+## Output Example <a name="output_example"></a>
+### Feed 1 Examples... <a name="example1"></a>
 ![detection1a-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%201%20Normal/Screenshot%20from%202019-07-04%2000-26-28.png "Feed 1 Detection Example A, with threshold value 0.3")
 ![detection1b-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%201%20Normal/Screenshot%20from%202019-07-04%2000-26-38.png "Feed 1 Detection Example B, with threshold value 0.3")
 
-### Feed 2 Examples...
+### Feed 2 Examples... <a name="example2"></a>
 ![detection2a-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%202%20Normal/Screenshot%20from%202019-07-02%2011-34-50.png "Feed 2 Detection Example A, with threshold value 0.3")
 ![detection2b-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%202%20Normal/Screenshot%20from%202019-07-02%2011-34-59.png "Feed 2 Detection Example B, with threshold value 0.3")
+
 
 
