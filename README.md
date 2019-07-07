@@ -7,29 +7,29 @@
 
 ### Table of Contents
 
-*  #### [Testing Environment](test_environment)
+*  #### [Testing Environment](https://github.com/jkim838/145P4P2019/blob/master/README.md#testing-environment-)
 
-*  #### [Dependencies](dependencies)
+*  #### [Dependencies](https://github.com/jkim838/145P4P2019/blob/master/README.md#dependencies-)
 
 *  #### [Installation](installation)
 
-   ##### [1. Setting up ROS Kinetic](setup_ros_kinetic)
+   ##### [1. Setting up ROS Kinetic](https://github.com/jkim838/145P4P2019/blob/master/README.md#1-setting-up-ros-kinetic-)
 
-   ##### [2. Setting up ROS Workspace](setup_ros_ws)
+   ##### [2. Setting up ROS Workspace](https://github.com/jkim838/145P4P2019/blob/master/README.md#2-setting-up-ros-workspace-)
 
-   ##### [3. Download YOLO v3 Weights](yolov3_download)
+   ##### [3. Download YOLO v3 Weights](https://github.com/jkim838/145P4P2019/blob/master/README.md#3-downloading-yolo-v3-weights-)
 
-   ##### [4. Launching the program](launch_program)
+   ##### [4. Launching the program](https://github.com/jkim838/145P4P2019/blob/master/README.md#4-launching-the-program-)
 
-*  #### [Output Examples](output_example)
+*  #### [Output Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#output-example-)
 
-   ##### [Feed 1. Examples](example1)
+   ##### [Feed 1. Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#feed-1-examples-)
 
-   ##### [Feed 2. Examples](example2)
+   ##### [Feed 2. Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#feed-2-examples-)
 
 INTRO GOES HERE...
 
-### Testing Environment <a name="test_environment></a>
+### Testing Environment
 
   * OS: Ubuntu 16.04 LTS
   * ROS: Kinetic
@@ -40,7 +40,7 @@ INTRO GOES HERE...
   * CUDA Driver Version: 10.1
   * Memory: 16GB
 
-## Dependencies <a name="dependencies"></a>
+## Dependencies
 
 ### 1. [YOLO ROS: Real-Time Object Dtection for ROS](https://github.com/leggedrobotics/darknet_ros)
 
@@ -54,9 +54,9 @@ INTRO GOES HERE...
 
 ### 4. CUDA Driver (8.0 or above) for YOLO v3 Compatibility
 
-## Installation <a name="installation"></a>
+## Installation
 
-### 1. Setting Up ROS Kinetic <a name="setup_ros_kinetic></a>
+### 1. Setting Up ROS Kinetic
 
 For more detail, refer to official installation guide [here](http://wiki.ros.org/kinetic/Installation/Ubuntu)...
 
@@ -97,7 +97,7 @@ source ~/.bashrc
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
 ```
 
-### 2. Setting up ROS Workspace <a name="setup_ros_ws"></a>
+### 2. Setting up ROS Workspace
 
 #### **2.1. Creating catkin_ws**
 
@@ -135,7 +135,7 @@ echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### **3. Downloading YOLO v3 Weights** <a name="yolov3_download"></a>
+### **3. Downloading YOLO v3 Weights**
 
 Detailed instructions can be found [here](https://pjreddie.com/darknet/yolo/)
 
@@ -151,7 +151,7 @@ Download YOLO v3 weights with following command,
 wget http://pjreddie.com/media/files/yolov3.weights
 ```
 
-### **4. Launching the program** <a name="launch_program"></a>
+### **4. Launching the program**
 
 Before the program can be launched, configuration file and video footage must be added. 
 
@@ -185,12 +185,12 @@ roslaunch video_feed.launch
 roslaunch video_feed_nobag.launch
 ```
 
-## Output Example <a name="output_example"></a>
-### Feed 1 Examples... <a name="example1"></a>
+## Output Example
+### Feed 1 Examples
 ![detection1a-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%201%20Normal/Screenshot%20from%202019-07-04%2000-26-28.png "Feed 1 Detection Example A, with threshold value 0.3")
 ![detection1b-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%201%20Normal/Screenshot%20from%202019-07-04%2000-26-38.png "Feed 1 Detection Example B, with threshold value 0.3")
 
-### Feed 2 Examples... <a name="example2"></a>
+### Feed 2 Examples
 ![detection2a-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%202%20Normal/Screenshot%20from%202019-07-02%2011-34-50.png "Feed 2 Detection Example A, with threshold value 0.3")
 ![detection2b-030](https://github.com/jkim838/145P4P2019/blob/master/Screenshot/Feed%202%20Normal/Screenshot%20from%202019-07-02%2011-34-59.png "Feed 2 Detection Example B, with threshold value 0.3")
 
