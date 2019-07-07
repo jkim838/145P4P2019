@@ -5,28 +5,6 @@
 
 ## Overview
 
-### Table of Contents
-
-*  #### [Testing Environment](https://github.com/jkim838/145P4P2019/blob/master/README.md#testing-environment-)
-
-*  #### [Dependencies](https://github.com/jkim838/145P4P2019/blob/master/README.md#dependencies-)
-
-*  #### [Installation](installation)
-
-   ##### [1. Setting up ROS Kinetic](https://github.com/jkim838/145P4P2019/blob/master/README.md#1-setting-up-ros-kinetic-)
-
-   ##### [2. Setting up ROS Workspace](https://github.com/jkim838/145P4P2019/blob/master/README.md#2-setting-up-ros-workspace-)
-
-   ##### [3. Download YOLO v3 Weights](https://github.com/jkim838/145P4P2019/blob/master/README.md#3-downloading-yolo-v3-weights-)
-
-   ##### [4. Launching the program](https://github.com/jkim838/145P4P2019/blob/master/README.md#4-launching-the-program-)
-
-*  #### [Output Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#output-example-)
-
-   ##### [Feed 1. Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#feed-1-examples-)
-
-   ##### [Feed 2. Examples](https://github.com/jkim838/145P4P2019/blob/master/README.md#feed-2-examples-)
-
 INTRO GOES HERE...
 
 ### Testing Environment
