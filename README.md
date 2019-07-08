@@ -5,7 +5,11 @@
 
 ## Overview
 
-INTRO GOES HERE....
+### Introduction
+
+The aim of this project is to develop an automatic traffic monitoring system utilising computer vision. The purpose of the system is to improve safety and efficiency. 
+
+The system shall make quantitative estimates of the traffic state based on the vehicles detected in video frames. The feasibility of various quantitative features will be assessed such as vehicle count, type and speed, as well as considering more abstract features such as accidents or unsafe driving practices.
 
 ### Testing Environment
 
