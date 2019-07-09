@@ -163,10 +163,10 @@ char getch(){
 void count_object_no(const std_msgs::Int8::ConstPtr& count_value){
 
   vehicle_count_integer = count_value->data;
-  std::ofstream export_csv;
-  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
-  export_csv << "Count:," << vehicle_count_integer << "\n";
-  export_csv.close();
+  // std::ofstream export_csv;
+  // export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
+  // export_csv << "Count:," << vehicle_count_integer << "\n";
+  // export_csv.close();
 
 }
 
@@ -185,6 +185,7 @@ void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
   std::ofstream export_csv;
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
   export_csv << "Detection ID:," << detection_id <<"\n";
+  export_csv << "Count:," << vehicle_count_integer << "\n";
   export_csv << "Vehicle Class:," << vehicle_class << "\n";
   export_csv << "X-Length:," << x_dimension_bbox << "\n";
   export_csv << "Y-Length:," << y_dimension_bbox << "\n";
