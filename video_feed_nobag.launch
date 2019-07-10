@@ -25,7 +25,7 @@
         <!-- enable looping playback -->
         <arg name="loop_videofile" value="true" />
         <!-- visualize on an image_view window the stream generated -->
-        <arg name="visualize" value="true" />
+        <arg name="visualize" value="false" />
    </include>
 
   <!-- Console launch prefix -->

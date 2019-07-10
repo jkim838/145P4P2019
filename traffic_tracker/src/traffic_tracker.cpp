@@ -39,8 +39,8 @@ int main(int arg, char **argv){
   ros::NodeHandle tt_nh;
   ros::Rate loop_rate(10);
 
-  cv::namedWindow("OpenCV_Feed");
-  cv::startWindowThread();
+  //cv::namedWindow("OpenCV_Feed");
+  //cv::startWindowThread();
   image_transport::ImageTransport transport_image(tt_nh);
 
   //ros::Subscriber tt_image_sub = tt_nh.subscribe("/darknet_ros/detection_image", 1000, extract_detection_image);
@@ -57,6 +57,7 @@ int main(int arg, char **argv){
     // does initializing tracker need to be inside of while loop?
 
   }
+  frame.release();
 
 }
 
@@ -68,14 +69,15 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     frame = take_cv->image;
 
     if(init_tracker == false){
-      roi = cv::Rect(min_x, min_y, x_dimension_bbox, y_dimension_bbox);
+      roi = cv::Rect(min_x, min_y, x_dimension_bbox+10, y_dimension_bbox+10);
       tracker->init(frame, roi);
       init_tracker = true;
     }
     else{
       tracker->update(frame, roi);
       cv::rectangle(frame, roi, cv::Scalar(255,0,0),2,1);
-      cv::imshow("OpenCV_Feed", frame);
+      cv::namedWindow("Tracker", CV_WINDOW_AUTOSIZE);
+      cv::imshow("Tracker", frame);
       cv::waitKey(30);
     }
   }
