@@ -173,20 +173,24 @@ void count_object_no(const std_msgs::Int8::ConstPtr& count_value){
 void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){
 
   // Negative coordinate error still persists....
-  int min_x = bbox->bounding_boxes[2].xmin;
-  int min_y = bbox->bounding_boxes[3].ymin;
-  int max_x = bbox->bounding_boxes[4].xmax;
-  int max_y = bbox->bounding_boxes[5].ymax;
+  const long int min_x = bbox->bounding_boxes[0].xmin;
+  const long int min_y = bbox->bounding_boxes[0].ymin;
+  const long int max_x = bbox->bounding_boxes[0].xmax;
+  const long int max_y = bbox->bounding_boxes[0].ymax;
   std::string vehicle_class = bbox->bounding_boxes[0].Class;
-  int x_dimension_bbox = (max_x - min_x);
-  int y_dimension_bbox = (max_y - min_y);
-  int x_center = min_x + x_dimension_bbox/2;
-  int y_center = min_y + y_dimension_bbox/2;
+  const long int x_dimension_bbox = (max_x - min_x);
+  const long int y_dimension_bbox = (max_y - min_y);
+  const long int x_center = min_x + x_dimension_bbox/2;
+  const long int y_center = min_y + y_dimension_bbox/2;
   std::ofstream export_csv;
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
   export_csv << "Detection ID:," << detection_id <<"\n";
   export_csv << "Count:," << vehicle_count_integer << "\n";
   export_csv << "Vehicle Class:," << vehicle_class << "\n";
+  export_csv << "X-min:," << min_x << "\n";
+  export_csv << "Y-min:," << min_y << "\n";
+  export_csv << "X-max:," << max_x << "\n";
+  export_csv << "Y-max:," << max_y << "\n";
   export_csv << "X-Length:," << x_dimension_bbox << "\n";
   export_csv << "Y-Length:," << y_dimension_bbox << "\n";
   export_csv << "X-Center:," << x_center << "\n";
