@@ -4,6 +4,3 @@
 [submodule "video_stream_opencv"]
 	path = video_stream_opencv
 	url = https://github.com/jkim838/video_stream_opencv.git
-[submodule "sort-deepsort-yolov3-ROS"]
-	path = sort-deepsort-yolov3-ROS
-	url = https://github.com/ilyas95/sort-deepsort-yolov3-ROS.git
