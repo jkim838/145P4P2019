@@ -22,7 +22,7 @@ void extract_count(const std_msgs::Int8::ConstPtr& count_value);
 // global variables and prototypes
 cv::Mat frame;
 cv::Point center_point;
-long int frame_count = 1;
+long int frame_count = 0;
 long int bbox_count = 0;
 int bbox_no = 0;
 //std::vector<cv::Rect> ROIs;
@@ -58,7 +58,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     take_cv = cv_bridge::toCvCopy(detection_image);
     frame = take_cv->image;
     for(size_t i = 0; i < trajectory_points.size(); i++){
-      cv::circle(frame, trajectory_points[i], 2, cv::Scalar(0,0,255), 2, 1);
+      cv::circle(frame, trajectory_points[i], 3, cv::Scalar(0,0,255), 2, 1);
     }
   }
   catch(cv_bridge::Exception& e){

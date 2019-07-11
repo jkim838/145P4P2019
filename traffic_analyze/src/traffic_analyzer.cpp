@@ -187,6 +187,7 @@ void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
     const long int x_center = min_x + x_dimension_bbox/2;
     const long int y_center = min_y + y_dimension_bbox/2;
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
+    export_csv << "Vehicle Number:," << i << "\n";
     export_csv << "Vehicle Class:," << vehicle_class << "\n";
     export_csv << "X-min:," << min_x << "\n";
     export_csv << "Y-min:," << min_y << "\n";
