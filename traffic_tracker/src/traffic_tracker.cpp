@@ -81,20 +81,31 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       prev_vehicles = vehicles;
     }
     else{
-      for(int i = 0; i < prev_vehicles.size(); i++){
-        for(int j = 0; j < vehicles.size(); j++){
-          int abs_x_diff = abs(prev_vehicles[i].x - vehicles[j].x);
-          int abs_y_diff = abs(prev_vehicles[i].y - vehicles[j].y);
-          int x_coord = vehicles[j].x;
-          int y_coord = vehicles[j].y;
-          std::string Class = vehicles[j].vehicle_class;
-          if(abs_x_diff < 20 && abs_y_diff < 20){
-            vehicles[j] = {prev_vehicles[i].detection_ID, prev_vehicles[i].vehicle_class, x_coord, y_coord};
+      // CASE 1:
+      for(int i = 0; i < vehicles.size(); i++){
+
+        bool match_found = false; //determine if match was found for current element in previous frame...
+        int current_x = vehicles[i].x; //hold to current x coordinate
+        int current_y = vehicles[i].y; //hold to current y coordinate
+        std::string current_class = vehicles[i].vehicle_class; //hold on to current class
+
+        for(int j = 0; j < prev_vehicles.size(); j++){
+          int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
+          int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
+          if(abs_x_diff < 50 && abs_y_diff < 50){
+            // a match between new frame element to previous frame has been found.
+            // assign to the new frame element the unique ID the matching element of the previous frame
+            vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y}; //give current element unique ID and class of the matching previous frame
+            match_found = true; // match was found for this element in previous frame (i.e. not a new vehicle)
           }
-          else{
-            // new vehicle on the scene,
-            vehicles[j] = {prev_vehicles.size()+1, Class, x_coord, y_coord};
+        }
+        if(!match_found){
+          // if no match for current element is found in previous frame, this is a new vehicle entering the scene,
+          int prev_index = i;
+          if(prev_index < 1){
+            prev_index = 0;
           }
+          vehicles[i] = {vehicles[prev_index].detection_ID + 1, current_class, current_x, current_y};
         }
       }
       ROS_INFO("-----\n");
@@ -114,13 +125,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         ROS_INFO("Y: %d\n", vehicles[i].y);
       }
       prev_vehicles = vehicles;
+      vehicles.clear();
     }
   }
   catch(cv_bridge::Exception& e){
     ROS_ERROR("Error - cannot launch OpenCV", detection_image->encoding.c_str());
   }
   frame_count++;
-  vehicles.clear();
   cv::namedWindow("Tracker", CV_WINDOW_AUTOSIZE);
   cv::imshow("Tracker", frame);
   cv::waitKey(30);
