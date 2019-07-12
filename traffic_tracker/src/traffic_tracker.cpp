@@ -168,6 +168,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv << "Absolute difference in Y:," << abs_y_diff <<"\n";
           export_csv << "----------\n";
           export_csv.close();
+          // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
           if(abs_x_diff < 100 && abs_y_diff < 100){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
