@@ -12,6 +12,8 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include <string>
+#include <sstream>
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <darknet_ros_msgs/BoundingBox.h>
 #include <std_msgs/Int8.h>
@@ -92,7 +94,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         for(int j = 0; j < prev_vehicles.size(); j++){
           int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
           int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
-          if(abs_x_diff < 50 && abs_y_diff < 50){
+          if(abs_x_diff < 10 && abs_y_diff < 10){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
             vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y}; //give current element unique ID and class of the matching previous frame
@@ -108,6 +110,16 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           vehicles[i] = {vehicles[prev_index].detection_ID + 1, current_class, current_x, current_y};
         }
       }
+
+      // try drawing a heatmap for current frame
+      for(int i = 0; i < vehicles.size(); i++){
+        cv::Point center_point = cv::Point(vehicles[i].x, vehicles[i].y);
+        cv::circle(frame, center_point, 30, cv::Scalar(255,0,0), 2, 1);
+        std::stringstream toString;
+        toString << vehicles[i].detection_ID;
+        cv::putText(frame, toString.str(), center_point, cv::FONT_HERSHEY_SIMPLEX, 0.75, cv::Scalar(0,0,255),2);
+      }
+
       ROS_INFO("-----\n");
       ROS_INFO("Frame: %d\n", frame_count);
       std::ofstream export_csv;
