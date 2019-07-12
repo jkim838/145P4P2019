@@ -79,38 +79,93 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     cv_bridge::CvImageConstPtr take_cv;
     take_cv = cv_bridge::toCvCopy(detection_image);
     frame = take_cv->image;
+
+    std::ofstream export_csv;
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+    export_csv << "==========\n";
+    export_csv << "Frame ID:," << frame_count <<"\n";
+    export_csv.close();
+
     if(frame_count == 1){
       prev_vehicles = vehicles;
     }
     else{
       // CASE 1:
-      for(int i = 0; i < vehicles.size(); i++){
+      if(vehicles.size() == 0){
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+        export_csv << "WARNING: No data in vector: vehicles\n";
+        export_csv.close();
+      }
+      else{
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+        export_csv << "vehicle is " << vehicles.size() << " wide\n";
+        export_csv.close();
+      }
 
+      if(prev_vehicles.size() == 0){
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+        export_csv << "WARNING: No data in vector: prev_vehicles\n";
+        export_csv.close();
+      }
+      else{
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+        export_csv << "prev_vehicle is " << prev_vehicles.size() << " wide\n";
+        export_csv.close();
+      }
+      
+      /***
+      IDEA: IF NO DATA IS IN VEHICLES, (hence tracker code won't run), then force previous frame into current frame to maintain?
+      ***/
+      for(int i = 0; i < vehicles.size(); i++){
         bool match_found = false; //determine if match was found for current element in previous frame...
         int current_x = vehicles[i].x; //hold to current x coordinate
         int current_y = vehicles[i].y; //hold to current y coordinate
         std::string current_class = vehicles[i].vehicle_class; //hold on to current class
 
+        // BUG: This wouldn't run if there's no data in prev_vehicle
         for(int j = 0; j < prev_vehicles.size(); j++){
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "prev_vehicle is " << prev_vehicles.size() << " wide\n";
+          export_csv << "Comparing element "<< vehicles[i].detection_ID << " in current frame to element " << prev_vehicles[j].detection_ID << " in the previous frame\n";
+          export_csv.close();
           int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
           int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
-          if(abs_x_diff < 10 && abs_y_diff < 10){
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "Absolute difference in X:," << abs_x_diff <<"\n";
+          export_csv << "Absolute difference in Y:," << abs_y_diff <<"\n";
+          export_csv.close();
+          if(abs_x_diff < 50 && abs_y_diff < 50){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
+            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+            export_csv << "Match between " << vehicles[i].detection_ID << " and " << prev_vehicles[j].detection_ID <<"\n";
+            export_csv << "Reassigning Unique ID:" << prev_vehicles[j].detection_ID << " to current element, " << vehicles[i].detection_ID <<"\n";
+            export_csv.close();
             vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y}; //give current element unique ID and class of the matching previous frame
             match_found = true; // match was found for this element in previous frame (i.e. not a new vehicle)
           }
         }
-        if(!match_found){
+        // BUG: when there is no detection in previous frame, the program will not execute following code and therefore no alteration to unique ID will be made
+        if(!match_found && prev_vehicles.size() != 0){
           // if no match for current element is found in previous frame, this is a new vehicle entering the scene,
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "No match found for the element: " << vehicles[i].detection_ID <<"\n";
+          export_csv.close();
           int prev_index = i;
           if(prev_index < 1){
             prev_index = 0;
           }
-          vehicles[i] = {vehicles[prev_index].detection_ID + 1, current_class, current_x, current_y};
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "Reassigning a new Unique ID:" << (vehicles[prev_index].detection_ID + 10) << " to current element, " << vehicles[i].detection_ID <<"\n";
+          export_csv.close();
+          vehicles[i] = {vehicles[prev_index].detection_ID + 10, current_class, current_x, current_y};
         }
-      }
 
+      }
+      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+      export_csv << "----------\n";
+      export_csv << "Finished tracking\n";
+      export_csv.close();
       // try drawing a heatmap for current frame
       for(int i = 0; i < vehicles.size(); i++){
         cv::Point center_point = cv::Point(vehicles[i].x, vehicles[i].y);
@@ -122,28 +177,36 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
       ROS_INFO("-----\n");
       ROS_INFO("Frame: %d\n", frame_count);
-      std::ofstream export_csv;
       export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-      export_csv << "Frame ID:," << frame_count <<"\n";
+      export_csv << "Listing tracking results for frame: " << frame_count << "\n";
       export_csv.close();
       for(int i = 0; i < vehicles.size(); i++){
         export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
         export_csv << "UniqueID:," << vehicles[i].detection_ID <<"\n";
-        export_csv << "X:," << vehicles[i].x <<"\n";
-        export_csv << "Y:," << vehicles[i].y <<"\n";
+        export_csv << "X: " << vehicles[i].x <<"\n";
+        export_csv << "Y: " << vehicles[i].y <<"\n";
         export_csv.close();
         ROS_INFO("Unique ID: %d\n", vehicles[i].detection_ID);
         ROS_INFO("X: %d\n", vehicles[i].x);
         ROS_INFO("Y: %d\n", vehicles[i].y);
       }
+      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+      export_csv << "----------\n";
+      export_csv << "Overwriting current frame vehicles to previous vehicles\n";
+      export_csv.close();
       prev_vehicles = vehicles;
-      vehicles.clear();
+
     }
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+    export_csv << "----------\n";
+    export_csv << "Wiping current frame vehicles\n";
+    export_csv.close();
+    vehicles.clear();
+    frame_count++;
   }
   catch(cv_bridge::Exception& e){
     ROS_ERROR("Error - cannot launch OpenCV", detection_image->encoding.c_str());
   }
-  frame_count++;
   cv::namedWindow("Tracker", CV_WINDOW_AUTOSIZE);
   cv::imshow("Tracker", frame);
   cv::waitKey(30);
