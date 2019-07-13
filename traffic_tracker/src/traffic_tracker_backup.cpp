@@ -163,6 +163,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       /*** END DEBUG MESSAGE ***/
 
       for(size_t i = 0; i < vehicles.size(); i++){
+
         bool match_found = false; //determine if match was found for current element in previous frame...
         int current_x = vehicles[i].x; //hold to current x coordinate
         int current_y = vehicles[i].y; //hold to current y coordinate
@@ -192,7 +193,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           /***END DEBUG MESSAGE***/
 
           // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
-          if(abs_x_diff < 100 && abs_y_diff < 100){
+          if(abs_x_diff < 300 && abs_y_diff < 300){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
 
@@ -211,7 +212,14 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           iteration_count++;
 
         }
-        // BUG: when there is no detection in previous frame, the program will not execute following code and therefore no alteration to unique ID will be made
+
+        //Need to find the maximum ID EVER assigned in history of prev_vehicles...
+        for(int i = 0; i < prev_vehicles.size(); i++){
+          if(maximum_ID < prev_vehicles[i].detection_ID){
+            maximum_ID = prev_vehicles[i].detection_ID;
+          }
+        }
+
         if(!match_found && prev_vehicles.size() != 0 && iteration_count == prev_vehicles.size()){
           // if no match for current element is found in previous frame, this is a new vehicle entering the scene,
 
@@ -221,20 +229,16 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv.close();
           /*** END DEBUG MESSAGE***/
 
-          for(int i = 0; i < prev_vehicles.size(); i++){
-            if(maximum_ID < prev_vehicles[i].detection_ID){
-              maximum_ID = prev_vehicles[i].detection_ID;
-            }
-          }
           int newUniqueID = maximum_ID + 1;
 
           /*** BEGIN DEBUG MESSAGE ***/
           export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "Global maximum unique ID was: " << maximum_ID << "\n";
           export_csv << "Assigning a new Unique ID:" << newUniqueID << " to current element, " << vehicles[i].detection_ID <<"\n";
           export_csv.close();
           /*** END DEBUG MESSAGE ***/
 
-          vehicles[i] = {newUniqueID, current_class, current_x, current_y}; // must wait until all comparison is done...
+          vehicles[i] = {newUniqueID, current_class, current_x, current_y};
         }
 
       }
@@ -292,6 +296,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     export_csv << "Wiping current frame vehicles\n";
     export_csv.close();
     /*** END DEBUG MESSAGE ***/
+
     vehicles.clear();
     frame_count++;
   }
@@ -300,6 +305,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     ROS_ERROR("Error - cannot launch OpenCV", detection_image->encoding.c_str());
   }
   cv::namedWindow("Tracker", CV_WINDOW_AUTOSIZE);
+  cvMoveWindow("Tracker", 0, 0);
+  cvResizeWindow("Tracker", 640, 480);
   cv::imshow("Tracker", frame);
   cv::waitKey(30);
 

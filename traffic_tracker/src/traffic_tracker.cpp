@@ -24,6 +24,8 @@ struct vehicle{
   std::string vehicle_class; // type of vehicle
   long int x; // center coordinate x
   long int y; // center coordinate y
+  long int x_dimension;
+  long int y_dimension;
 };
 
 // function Prototypes
@@ -80,11 +82,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
     if(frame_count == 1){
       for(int i = 0; i < vehicles.size(); i++){
-        int current_x = vehicles[i].x;
-        int current_y = vehicles[i].y;
+        long int current_x = vehicles[i].x;
+        long int current_y = vehicles[i].y;
         std::string current_class = vehicles[i].vehicle_class;
-        int current_ID = vehicles[i].detection_ID;
-        prev_vehicles[i] = {current_ID, current_class, current_x, current_y};
+        long int current_ID = vehicles[i].detection_ID;
+        long int current_x_dimension = vehicles[i].x_dimension;
+        long int current_y_dimension = vehicles[i].y_dimension;
+        prev_vehicles[i] = {current_ID, current_class, current_x, current_y, current_x_dimension, current_y_dimension};
       }
     }
     else{
@@ -101,10 +105,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       else{
         // force ID Rearrangement?
         for(int i = 0; i < vehicles.size(); i++){
-          int current_x = vehicles[i].x;
-          int current_y = vehicles[i].y;
+          long int current_x = vehicles[i].x;
+          long int current_y = vehicles[i].y;
           std::string current_class = vehicles[i].vehicle_class;
-          vehicles[i] = {i, current_class, current_x, current_y};
+          long int current_x_dimension = vehicles[i].x_dimension;
+          long int current_y_dimension = vehicles[i].y_dimension;
+          vehicles[i] = {i, current_class, current_x, current_y, current_x_dimension, current_y_dimension};
         }
 
         /***BEGIN DEBUG MESSAGE ***/
@@ -165,9 +171,11 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       for(size_t i = 0; i < vehicles.size(); i++){
 
         bool match_found = false; //determine if match was found for current element in previous frame...
-        int current_x = vehicles[i].x; //hold to current x coordinate
-        int current_y = vehicles[i].y; //hold to current y coordinate
+        long int current_x = vehicles[i].x; //hold to current x coordinate
+        long int current_y = vehicles[i].y; //hold to current y coordinate
         std::string current_class = vehicles[i].vehicle_class; //hold on to current class
+        long int current_x_dimension = vehicles[i].x_dimension;
+        long int current_y_dimension = vehicles[i].y_dimension;
 
         int iteration_count =0;
 
@@ -183,17 +191,24 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv << "Current element: " << vehicles[i].detection_ID << "\n";
           export_csv << "X: " << current_x << "\n";
           export_csv << "Y: " << current_y << "\n";
+          export_csv << "X-Dimension: " << current_x_dimension << "\n";
+          export_csv << "Y-Dimension: " << current_y_dimension << "\n";
+          export_csv << "----------\n";
           export_csv << "Previous element: " << prev_vehicles[j].detection_ID << "\n";
           export_csv << "X: " << prev_vehicles[j].x << "\n";
           export_csv << "X: " << prev_vehicles[j].y << "\n";
+          export_csv << "X-Dimension: " << prev_vehicles[j].x_dimension << "\n";
+          export_csv << "X-Dimension: " << prev_vehicles[j].y_dimension << "\n";
+          export_csv << "----------\n";
           export_csv << "Absolute difference in X:," << abs_x_diff <<"\n";
           export_csv << "Absolute difference in Y:," << abs_y_diff <<"\n";
           export_csv << "----------\n";
+          export_csv << "Using threshold value X: "<< current_x_dimension/2 << " and Y: " << current_y_dimension/2 << "\n";
           export_csv.close();
           /***END DEBUG MESSAGE***/
 
           // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
-          if(abs_x_diff < 100 && abs_y_diff < 100){
+          if(abs_x_diff < (current_x_dimension/2) && abs_y_diff < (current_y_dimension/2)){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
 
@@ -205,7 +220,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
             export_csv.close();
             /*** END DEBUG MESSAGE ***/
 
-            vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y}; //give current element unique ID and class of the matching previous frame
+            vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y, current_x_dimension, current_y_dimension};
+            //give current element unique ID and class of the matching previous frame
             match_found = true; // match was found for this element in previous frame (i.e. not a new vehicle)
 
           }
@@ -237,7 +253,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv.close();
           /*** END DEBUG MESSAGE ***/
 
-          vehicles[i] = {newUniqueID, current_class, current_x, current_y};
+          vehicles[i] = {newUniqueID, current_class, current_x, current_y, current_x_dimension, current_y_dimension};
         }
 
       }
@@ -295,7 +311,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     export_csv << "Wiping current frame vehicles\n";
     export_csv.close();
     /*** END DEBUG MESSAGE ***/
-    
+
     vehicles.clear();
     frame_count++;
   }
@@ -324,7 +340,7 @@ void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){
     long int x_center = min_x + x_dimension_bbox/2;
     long int y_center = min_y + y_dimension_bbox/2;
     if(vehicle_class=="bicycle"||vehicle_class=="car"||vehicle_class=="motorbike"||vehicle_class=="bus"||vehicle_class=="truck"){
-        vehicle current = {i, vehicle_class, x_center, y_center};
+        vehicle current = {i, vehicle_class, x_center, y_center, x_dimension_bbox, y_dimension_bbox};
         vehicles.push_back(current);
     }
   }
