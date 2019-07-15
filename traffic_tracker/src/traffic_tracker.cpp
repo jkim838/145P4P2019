@@ -14,6 +14,8 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <math.h>
+#include <algorithm>
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <darknet_ros_msgs/BoundingBox.h>
 #include <std_msgs/Int8.h>
@@ -176,39 +178,69 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         std::string current_class = vehicles[i].vehicle_class; //hold on to current class
         long int current_x_dimension = vehicles[i].x_dimension;
         long int current_y_dimension = vehicles[i].y_dimension;
+        long int current_x_min = current_x - (current_x_dimension / 2);
+        long int current_x_max = current_x + (current_x_dimension / 2);
+        long int current_y_min = current_y - (current_y_dimension / 2);
+        long int current_y_max = current_y + (current_y_dimension / 2);
 
         int iteration_count =0;
 
         // BUG: This wouldn't run if there's no data in prev_vehicle
         for(size_t j = 0; j < prev_vehicles.size(); j++){
 
-          int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
-          int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
+          long int prev_x = prev_vehicles[j].x;
+          long int prev_y = prev_vehicles[j].y;
+          long int prev_x_dimension = prev_vehicles[j].x_dimension;
+          long int prev_y_dimension = prev_vehicles[j].y_dimension;
+
+          long int previous_x_min = prev_x - (prev_x_dimension / 2);
+          long int previous_x_max = prev_x + (prev_x_dimension / 2);
+          long int previous_y_min = prev_y - (prev_y_dimension / 2);
+          long int previous_y_max = prev_y + (prev_y_dimension / 2);
+
+          long int intersection_x = (current_x_dimension + prev_x_dimension) - (std::max(current_x_max, previous_x_max) - std::min(current_x_min, previous_x_min));
+          long int intersection_y = (current_y_dimension + prev_y_dimension) - (std::max(current_y_max, previous_y_max) - std::min(current_y_min, previous_y_min));
+
+          long int area_intersection = abs(intersection_x * intersection_y);
+
+          long int area_union = abs((current_x_dimension * current_y_dimension) + (prev_x_dimension * prev_y_dimension) - area_intersection);
+
+          float IOU = (float)area_intersection / (float)area_union;
+
+          float IOU_Threshold = 0.5;
+          //int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
+          //int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
+          //int euclid_distance = hypot(abs_x_diff, abs_y_diff);
+          //int euclid_threshold = hypot(current_x_dimension, current_y_dimension) /2 ;
 
           /*** BEGIN DEBUG MESSAGE ***/
           export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
           export_csv << "Comparing element "<< vehicles[i].detection_ID << " in current frame to element " << prev_vehicles[j].detection_ID << " in the previous frame\n";
           export_csv << "Current element: " << vehicles[i].detection_ID << "\n";
-          export_csv << "X: " << current_x << "\n";
-          export_csv << "Y: " << current_y << "\n";
+          export_csv << "Center X: " << current_x << "\n";
+          export_csv << "Center Y: " << current_y << "\n";
           export_csv << "X-Dimension: " << current_x_dimension << "\n";
           export_csv << "Y-Dimension: " << current_y_dimension << "\n";
+          export_csv << "Area: " << current_y_dimension * current_x_dimension << "\n";
           export_csv << "----------\n";
           export_csv << "Previous element: " << prev_vehicles[j].detection_ID << "\n";
-          export_csv << "X: " << prev_vehicles[j].x << "\n";
-          export_csv << "X: " << prev_vehicles[j].y << "\n";
-          export_csv << "X-Dimension: " << prev_vehicles[j].x_dimension << "\n";
-          export_csv << "X-Dimension: " << prev_vehicles[j].y_dimension << "\n";
+          export_csv << "Center X: " << prev_x << "\n";
+          export_csv << "Center Y: " << prev_y << "\n";
+          export_csv << "X-Dimension: " << prev_x_dimension << "\n";
+          export_csv << "X-Dimension: " << prev_y_dimension << "\n";
+          export_csv << "Area: " << prev_y_dimension * prev_x_dimension << "\n";
           export_csv << "----------\n";
-          export_csv << "Absolute difference in X:," << abs_x_diff <<"\n";
-          export_csv << "Absolute difference in Y:," << abs_y_diff <<"\n";
+          export_csv << "Area of Intersection:" << area_intersection <<"\n";
+          export_csv << "Area of Union:" << area_union <<"\n";
+          export_csv << "Correlation: " << IOU <<"\n";
           export_csv << "----------\n";
-          export_csv << "Using threshold value X: "<< current_x_dimension/2 << " and Y: " << current_y_dimension/2 << "\n";
+          export_csv << "IOU Threshold: "<< IOU_Threshold << "\n";
+          export_csv << "----------\n";
           export_csv.close();
           /***END DEBUG MESSAGE***/
 
           // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
-          if(abs_x_diff < (current_x_dimension/2) && abs_y_diff < (current_y_dimension/2)){
+          if(IOU > IOU_Threshold){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
 
