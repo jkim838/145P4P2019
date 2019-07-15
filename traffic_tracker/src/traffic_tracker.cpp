@@ -222,11 +222,11 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
           float IOU = (float)area_intersection / (float)area_union;
 
-          float IOU_Threshold = 0.5;
-          //int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
-          //int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
-          //int euclid_distance = hypot(abs_x_diff, abs_y_diff);
-          //int euclid_threshold = hypot(current_x_dimension, current_y_dimension) /2 ;
+          float IOU_Threshold = 0.35;
+          int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
+          int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
+          int euclid_distance = hypot(abs_x_diff, abs_y_diff);
+          int euclid_threshold = hypot(current_x_dimension, current_y_dimension)/6; // give strict Euclidean distance threshold as it is only a back-up threshold
 
           /*** BEGIN DEBUG MESSAGE ***/
           export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
@@ -242,20 +242,22 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv << "Center X: " << prev_x << "\n";
           export_csv << "Center Y: " << prev_y << "\n";
           export_csv << "X-Dimension: " << prev_x_dimension << "\n";
-          export_csv << "X-Dimension: " << prev_y_dimension << "\n";
+          export_csv << "Y-Dimension: " << prev_y_dimension << "\n";
           export_csv << "Area: " << prev_y_dimension * prev_x_dimension << "\n";
           export_csv << "----------\n";
           export_csv << "Area of Intersection:" << area_intersection <<"\n";
           export_csv << "Area of Union:" << area_union <<"\n";
           export_csv << "Correlation: " << IOU <<"\n";
+          export_csv << "Euclidean Distance: " << euclid_distance << "\n";
           export_csv << "----------\n";
           export_csv << "IOU Threshold: "<< IOU_Threshold << "\n";
+          export_csv << "Euclid threshold value X: "<< euclid_threshold << "\n";
           export_csv << "----------\n";
           export_csv.close();
           /***END DEBUG MESSAGE***/
 
           // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
-          if(IOU > IOU_Threshold){
+          if(IOU > IOU_Threshold || euclid_distance < euclid_threshold){
             // a match between new frame element to previous frame has been found.
             // assign to the new frame element the unique ID the matching element of the previous frame
 
