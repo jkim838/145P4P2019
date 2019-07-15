@@ -42,7 +42,7 @@ long int frame_count = 1;
 long int bbox_count = 0;
 int bbox_no = 0;
 int giveUniqueID = 0;
-int maximum_ID =0;
+int maximum_ID = 0;
 std::vector<cv::Point> trajectory_points;
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
 std::vector<vehicle> prev_vehicles; // vehicles and their coordinates in previous frame
@@ -179,13 +179,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         long int current_x_dimension = vehicles[i].x_dimension;
         long int current_y_dimension = vehicles[i].y_dimension;
 
-        long int current_x_min = current_x - (current_x_dimension / 2); //x1
-        long int current_x_max = current_x + (current_x_dimension / 2); //x2
-        long int current_y_min = current_y - (current_y_dimension / 2); //y1
-        long int current_y_max = current_y + (current_y_dimension / 2); //y2
-        long int area_current = (current_x_max - current_x_min) * (current_y_max - current_y_min);
+        long int current_x_min = current_x - (current_x_dimension / 2); //minimum x-coordinate value, x1
+        long int current_x_max = current_x + (current_x_dimension / 2); //maximum x-coordinate value, x2
+        long int current_y_min = current_y - (current_y_dimension / 2); //minimum y-coordinate value, y1
+        long int current_y_max = current_y + (current_y_dimension / 2); //maximum y-coordinate value, y2
+        long int area_current = (current_x_max - current_x_min) * (current_y_max - current_y_min); // calculate the area of bounding box in px...
 
-        int iteration_count =0;
+        int iteration_count = 0;
 
         // BUG: This wouldn't run if there's no data in prev_vehicle
         for(size_t j = 0; j < prev_vehicles.size(); j++){
@@ -195,22 +195,22 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           long int prev_x_dimension = prev_vehicles[j].x_dimension;
           long int prev_y_dimension = prev_vehicles[j].y_dimension;
 
-          long int previous_x_min = prev_x - (prev_x_dimension / 2); //x1
-          long int previous_x_max = prev_x + (prev_x_dimension / 2); //x2
-          long int previous_y_min = prev_y - (prev_y_dimension / 2); //y1
-          long int previous_y_max = prev_y + (prev_y_dimension / 2); //y2
+          long int previous_x_min = prev_x - (prev_x_dimension / 2); // minimum x-coordinate value, x1
+          long int previous_x_max = prev_x + (prev_x_dimension / 2); // maximum x-coordinate value, x2
+          long int previous_y_min = prev_y - (prev_y_dimension / 2); // minimum y-coordinate value, y1
+          long int previous_y_max = prev_y + (prev_y_dimension / 2); // maximum y-coordinate value, y2
 
-          long int intersection_x1 = std::max(current_x_min, previous_x_min);
-          long int intersection_x2 = std::min(current_x_max, previous_x_max);
-          long int intersection_y1 = std::max(current_y_min, previous_y_min);
-          long int intersection_y2 = std::min(current_y_max, previous_y_max);
+          long int intersection_x1 = std::max(current_x_min, previous_x_min); // minimum x-coordinate value of intersecting rectangle
+          long int intersection_x2 = std::min(current_x_max, previous_x_max); // maximum x-coordinate value of the intersecting rectangle
+          long int intersection_y1 = std::max(current_y_min, previous_y_min); // minimum y-coordinate of the intersecting rectangle
+          long int intersection_y2 = std::min(current_y_max, previous_y_max); // maximum y-coordinate of the intersecting rectangle
 
           long int intersection_width = (intersection_x2 - intersection_x1);
           long int intersection_height = (intersection_y2 - intersection_y1);
 
           long int area_intersection;
           if(intersection_width < 0 || intersection_height < 0){
-            area_intersection = 0;
+            area_intersection = 0; // for a case where two bounding boxes do not overlap...
           }
           else{
             area_intersection = intersection_width * intersection_height;
@@ -276,6 +276,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
         }
 
+        //Need to find the maximum ID EVER assigned in history of prev_vehicles...
+        for(int i = 0; i < vehicles.size(); i++){
+          if(maximum_ID < vehicles[i].detection_ID){
+            maximum_ID = vehicles[i].detection_ID;
+          }
+        }
+
         if(!match_found && prev_vehicles.size() != 0 && iteration_count == prev_vehicles.size()){
           // if no match for current element is found in previous frame, this is a new vehicle entering the scene,
 
@@ -285,12 +292,6 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           export_csv.close();
           /*** END DEBUG MESSAGE***/
 
-          //Need to find the maximum ID EVER assigned in history of prev_vehicles...
-          for(int i = 0; i < prev_vehicles.size(); i++){
-            if(maximum_ID < prev_vehicles[i].detection_ID){
-              maximum_ID = prev_vehicles[i].detection_ID;
-            }
-          }
           int newUniqueID = maximum_ID + 1;
 
           /*** BEGIN DEBUG MESSAGE ***/
