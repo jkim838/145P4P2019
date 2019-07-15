@@ -178,10 +178,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         std::string current_class = vehicles[i].vehicle_class; //hold on to current class
         long int current_x_dimension = vehicles[i].x_dimension;
         long int current_y_dimension = vehicles[i].y_dimension;
-        long int current_x_min = current_x - (current_x_dimension / 2);
-        long int current_x_max = current_x + (current_x_dimension / 2);
-        long int current_y_min = current_y - (current_y_dimension / 2);
-        long int current_y_max = current_y + (current_y_dimension / 2);
+
+        long int current_x_min = current_x - (current_x_dimension / 2); //x1
+        long int current_x_max = current_x + (current_x_dimension / 2); //x2
+        long int current_y_min = current_y - (current_y_dimension / 2); //y1
+        long int current_y_max = current_y + (current_y_dimension / 2); //y2
+        long int area_current = (current_x_max - current_x_min) * (current_y_max - current_y_min);
 
         int iteration_count =0;
 
@@ -193,17 +195,30 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           long int prev_x_dimension = prev_vehicles[j].x_dimension;
           long int prev_y_dimension = prev_vehicles[j].y_dimension;
 
-          long int previous_x_min = prev_x - (prev_x_dimension / 2);
-          long int previous_x_max = prev_x + (prev_x_dimension / 2);
-          long int previous_y_min = prev_y - (prev_y_dimension / 2);
-          long int previous_y_max = prev_y + (prev_y_dimension / 2);
+          long int previous_x_min = prev_x - (prev_x_dimension / 2); //x1
+          long int previous_x_max = prev_x + (prev_x_dimension / 2); //x2
+          long int previous_y_min = prev_y - (prev_y_dimension / 2); //y1
+          long int previous_y_max = prev_y + (prev_y_dimension / 2); //y2
 
-          long int intersection_x = (current_x_dimension + prev_x_dimension) - (std::max(current_x_max, previous_x_max) - std::min(current_x_min, previous_x_min));
-          long int intersection_y = (current_y_dimension + prev_y_dimension) - (std::max(current_y_max, previous_y_max) - std::min(current_y_min, previous_y_min));
+          long int intersection_x1 = std::max(current_x_min, previous_x_min);
+          long int intersection_x2 = std::min(current_x_max, previous_x_max);
+          long int intersection_y1 = std::max(current_y_min, previous_y_min);
+          long int intersection_y2 = std::min(current_y_max, previous_y_max);
 
-          long int area_intersection = abs(intersection_x * intersection_y);
+          long int intersection_width = (intersection_x2 - intersection_x1);
+          long int intersection_height = (intersection_y2 - intersection_y1);
 
-          long int area_union = abs((current_x_dimension * current_y_dimension) + (prev_x_dimension * prev_y_dimension) - area_intersection);
+          long int area_intersection;
+          if(intersection_width < 0 || intersection_height < 0){
+            area_intersection = 0;
+          }
+          else{
+            area_intersection = intersection_width * intersection_height;
+          }
+
+          long int area_previous = (previous_y_max - previous_y_min) * (previous_x_max - previous_x_min);
+          long int area_union = area_current + area_previous - area_intersection;
+
 
           float IOU = (float)area_intersection / (float)area_union;
 
