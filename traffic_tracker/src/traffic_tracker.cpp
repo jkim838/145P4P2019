@@ -1,51 +1,4 @@
-#include <ros/ros.h>
-#include <vector>
-#include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/tracking.hpp>
-#include <opencv2/core/ocl.hpp>
-#include <opencv2/core/utility.hpp>
-#include <opencv2/videoio.hpp>
-#include <sensor_msgs/Image.h>
-#include <iostream>
-#include <fstream>
-#include <cstring>
-#include <cstdlib>
-#include <string>
-#include <sstream>
-#include <math.h>
-#include <algorithm>
-#include <darknet_ros_msgs/BoundingBoxes.h>
-#include <darknet_ros_msgs/BoundingBox.h>
-#include <std_msgs/Int8.h>
-
-// Structure Objects
-struct vehicle{
-  int detection_ID; // ID assigned by object_detector
-  std::string vehicle_class; // type of vehicle
-  long int x; // center coordinate x
-  long int y; // center coordinate y
-  long int x_dimension;
-  long int y_dimension;
-};
-
-// function Prototypes
-void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image);
-void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
-void extract_count(const std_msgs::Int8::ConstPtr& count_value);
-
-// global variables and prototypes
-cv::Mat frame;
-cv::Point center_point;
-long int frame_count = 1;
-long int bbox_count = 0;
-int bbox_no = 0;
-int giveUniqueID = 0;
-int maximum_ID = 0;
-std::vector<cv::Point> trajectory_points;
-std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
-std::vector<vehicle> prev_vehicles; // vehicles and their coordinates in previous frame
+#include "traffic_tracker.hpp"
 
 int main(int arg, char **argv){
 
@@ -75,11 +28,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     frame = take_cv->image;
 
     /*** BEGIN DEBUG MESSAGE ***/
-    std::ofstream export_csv;
-    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-    export_csv << "==========\n";
-    export_csv << "Frame ID:," << frame_count <<"\n";
-    export_csv.close();
+    #ifdef ENABLE_DEBUG_MODE
+      std::ofstream export_csv;
+      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+      export_csv << "==========\n";
+      export_csv << "Frame ID:," << frame_count <<"\n";
+      export_csv.close();
+    #endif
     /*** END DEBUG MESSAGE ***/
 
     if(frame_count == 1){
@@ -98,11 +53,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       if(vehicles.size() == 0){
 
         /*** BEGIN DEBUG MESSAGE ***/
-        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "WARNING: No data in vector: vehicles\n";
-        export_csv.close();
+        #ifdef ENABLE_DEBUG_MODE
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "WARNING: No data in vector: vehicles\n";
+          export_csv.close();
+        #endif
         /*** END DEBUG MESSAGE ***/
-
       }
       else{
         // force ID Rearrangement?
@@ -116,58 +72,62 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         }
 
         /***BEGIN DEBUG MESSAGE ***/
-        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "vehicle is " << vehicles.size() << " wide\n";
-        export_csv << "list of elements: \n";
-        export_csv << "ID:";
-        for(size_t i = 0; i < vehicles.size(); i++){
-          export_csv << vehicles[i].detection_ID << ",";
-        }
-        export_csv << "\n";
-        export_csv << "X:";
-        for(size_t i = 0; i < vehicles.size(); i++){
-          export_csv << vehicles[i].x << ",";
-        }
-        export_csv << "\n";
-        export_csv << "Y:";
-        for(size_t i = 0; i < vehicles.size(); i++){
-          export_csv << vehicles[i].y << ",";
-        }
-        export_csv << "\n";
-        export_csv.close();
+        #ifdef ENABLE_DEBUG_MODE
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "vehicle is " << vehicles.size() << " wide\n";
+          export_csv << "list of elements: \n";
+          export_csv << "ID:";
+          for(size_t i = 0; i < vehicles.size(); i++){
+            export_csv << vehicles[i].detection_ID << ",";
+          }
+          export_csv << "\n";
+          export_csv << "X:";
+          for(size_t i = 0; i < vehicles.size(); i++){
+            export_csv << vehicles[i].x << ",";
+          }
+          export_csv << "\n";
+          export_csv << "Y:";
+          for(size_t i = 0; i < vehicles.size(); i++){
+            export_csv << vehicles[i].y << ",";
+          }
+          export_csv << "\n";
+          export_csv.close();
+        #endif
         /***END DEBUG MESSAGE***/
 
       }
 
       /*** BEGIN DEBUG MESSAGE ***/
-      if(prev_vehicles.size() == 0){
-        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "WARNING: No data in vector: prev_vehicles\n";
-        export_csv << "----------\n";
-        export_csv.close();
-      }
-      else{
-        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "prev_vehicle is " << prev_vehicles.size() << " wide\n";
-        export_csv << "list of elements: \n";
-        export_csv << "ID:";
-        for(size_t i = 0; i < prev_vehicles.size(); i++){
-          export_csv << prev_vehicles[i].detection_ID << ",";
+      #ifdef ENABLE_DEBUG_MODE
+        if(prev_vehicles.size() == 0){
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "WARNING: No data in vector: prev_vehicles\n";
+          export_csv << "----------\n";
+          export_csv.close();
         }
-        export_csv << "\n";
-        export_csv << "X:";
-        for(size_t i = 0; i < prev_vehicles.size(); i++){
-          export_csv << prev_vehicles[i].x << ",";
+        else{
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "prev_vehicle is " << prev_vehicles.size() << " wide\n";
+          export_csv << "list of elements: \n";
+          export_csv << "ID:";
+          for(size_t i = 0; i < prev_vehicles.size(); i++){
+            export_csv << prev_vehicles[i].detection_ID << ",";
+          }
+          export_csv << "\n";
+          export_csv << "X:";
+          for(size_t i = 0; i < prev_vehicles.size(); i++){
+            export_csv << prev_vehicles[i].x << ",";
+          }
+          export_csv << "\n";
+          export_csv << "Y:";
+          for(size_t i = 0; i < prev_vehicles.size(); i++){
+            export_csv << prev_vehicles[i].y << ",";
+          }
+          export_csv << "\n";
+          export_csv << "----------\n";
+          export_csv.close();
         }
-        export_csv << "\n";
-        export_csv << "Y:";
-        for(size_t i = 0; i < prev_vehicles.size(); i++){
-          export_csv << prev_vehicles[i].y << ",";
-        }
-        export_csv << "\n";
-        export_csv << "----------\n";
-        export_csv.close();
-      }
+      #endif
       /*** END DEBUG MESSAGE ***/
 
       for(size_t i = 0; i < vehicles.size(); i++){
@@ -229,31 +189,33 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           int euclid_threshold = hypot(current_x_dimension, current_y_dimension)/6; // give strict Euclidean distance threshold as it is only a back-up threshold
 
           /*** BEGIN DEBUG MESSAGE ***/
-          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-          export_csv << "Comparing element "<< vehicles[i].detection_ID << " in current frame to element " << prev_vehicles[j].detection_ID << " in the previous frame\n";
-          export_csv << "Current element: " << vehicles[i].detection_ID << "\n";
-          export_csv << "Center X: " << current_x << "\n";
-          export_csv << "Center Y: " << current_y << "\n";
-          export_csv << "X-Dimension: " << current_x_dimension << "\n";
-          export_csv << "Y-Dimension: " << current_y_dimension << "\n";
-          export_csv << "Area: " << current_y_dimension * current_x_dimension << "\n";
-          export_csv << "----------\n";
-          export_csv << "Previous element: " << prev_vehicles[j].detection_ID << "\n";
-          export_csv << "Center X: " << prev_x << "\n";
-          export_csv << "Center Y: " << prev_y << "\n";
-          export_csv << "X-Dimension: " << prev_x_dimension << "\n";
-          export_csv << "Y-Dimension: " << prev_y_dimension << "\n";
-          export_csv << "Area: " << prev_y_dimension * prev_x_dimension << "\n";
-          export_csv << "----------\n";
-          export_csv << "Area of Intersection:" << area_intersection <<"\n";
-          export_csv << "Area of Union:" << area_union <<"\n";
-          export_csv << "Correlation: " << IOU <<"\n";
-          export_csv << "Euclidean Distance: " << euclid_distance << "\n";
-          export_csv << "----------\n";
-          export_csv << "IOU Threshold: "<< IOU_Threshold << "\n";
-          export_csv << "Euclid threshold value X: "<< euclid_threshold << "\n";
-          export_csv << "----------\n";
-          export_csv.close();
+          #ifdef ENABLE_DEBUG_MODE
+            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+            export_csv << "Comparing element "<< vehicles[i].detection_ID << " in current frame to element " << prev_vehicles[j].detection_ID << " in the previous frame\n";
+            export_csv << "Current element: " << vehicles[i].detection_ID << "\n";
+            export_csv << "Center X: " << current_x << "\n";
+            export_csv << "Center Y: " << current_y << "\n";
+            export_csv << "X-Dimension: " << current_x_dimension << "\n";
+            export_csv << "Y-Dimension: " << current_y_dimension << "\n";
+            export_csv << "Area: " << current_y_dimension * current_x_dimension << "\n";
+            export_csv << "----------\n";
+            export_csv << "Previous element: " << prev_vehicles[j].detection_ID << "\n";
+            export_csv << "Center X: " << prev_x << "\n";
+            export_csv << "Center Y: " << prev_y << "\n";
+            export_csv << "X-Dimension: " << prev_x_dimension << "\n";
+            export_csv << "Y-Dimension: " << prev_y_dimension << "\n";
+            export_csv << "Area: " << prev_y_dimension * prev_x_dimension << "\n";
+            export_csv << "----------\n";
+            export_csv << "Area of Intersection:" << area_intersection <<"\n";
+            export_csv << "Area of Union:" << area_union <<"\n";
+            export_csv << "Correlation: " << IOU <<"\n";
+            export_csv << "Euclidean Distance: " << euclid_distance << "\n";
+            export_csv << "----------\n";
+            export_csv << "IOU Threshold: "<< IOU_Threshold << "\n";
+            export_csv << "Euclid threshold value X: "<< euclid_threshold << "\n";
+            export_csv << "----------\n";
+            export_csv.close();
+          #endif
           /***END DEBUG MESSAGE***/
 
           // TODO: DYNAMICALLY ADJUST THE THRESHOLD VALUE PER DIFFERENT SIZE OF BBOX...
@@ -262,11 +224,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
             // assign to the new frame element the unique ID the matching element of the previous frame
 
             /***BEGIN DEBUG MESSAGE ***/
-            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-            export_csv << "Match between " << vehicles[i].detection_ID << " and " << prev_vehicles[j].detection_ID <<"\n";
-            export_csv << "Reassigning Unique ID:" << prev_vehicles[j].detection_ID << " to current element, " << vehicles[i].detection_ID <<"\n";
-            export_csv << "----------\n";
-            export_csv.close();
+            #ifdef ENABLE_DEBUG_MODE
+              export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+              export_csv << "Match between " << vehicles[i].detection_ID << " and " << prev_vehicles[j].detection_ID <<"\n";
+              export_csv << "Reassigning Unique ID:" << prev_vehicles[j].detection_ID << " to current element, " << vehicles[i].detection_ID <<"\n";
+              export_csv << "----------\n";
+              export_csv.close();
+            #endif
             /*** END DEBUG MESSAGE ***/
 
             vehicles[i] = {prev_vehicles[j].detection_ID, prev_vehicles[j].vehicle_class, current_x, current_y, current_x_dimension, current_y_dimension};
@@ -289,18 +253,22 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           // if no match for current element is found in previous frame, this is a new vehicle entering the scene,
 
           /*** BEGIN DEBUG MESSAGE ***/
-          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-          export_csv << "No match found for the element: " << vehicles[i].detection_ID <<"\n";
-          export_csv.close();
+          #ifdef ENABLE_DEBUG_MODE
+            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+            export_csv << "No match found for the element: " << vehicles[i].detection_ID <<"\n";
+            export_csv.close();
+          #endif
           /*** END DEBUG MESSAGE***/
 
           int newUniqueID = maximum_ID + 1;
 
           /*** BEGIN DEBUG MESSAGE ***/
-          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-          export_csv << "Global maximum unique ID was: " << maximum_ID << "\n";
-          export_csv << "Assigning a new Unique ID:" << newUniqueID << " to current element, " << vehicles[i].detection_ID <<"\n";
-          export_csv.close();
+          #ifdef ENABLE_DEBUG_MODE
+            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+            export_csv << "Global maximum unique ID was: " << maximum_ID << "\n";
+            export_csv << "Assigning a new Unique ID:" << newUniqueID << " to current element, " << vehicles[i].detection_ID <<"\n";
+            export_csv.close();
+          #endif
           /*** END DEBUG MESSAGE ***/
 
           vehicles[i] = {newUniqueID, current_class, current_x, current_y, current_x_dimension, current_y_dimension};
@@ -308,11 +276,15 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
       }
 
+      /*** DEBUG: PUT VRI CODE HERE? ***/
+
       /*** BEGIN DEBUG MESSAGE ***/
-      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-      export_csv << "----------\n";
-      export_csv << "Finished tracking\n";
-      export_csv.close();
+      #ifdef ENABLE_DEBUG_MODE
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+        export_csv << "----------\n";
+        export_csv << "Finished tracking\n";
+        export_csv.close();
+      #endif
       /*** END DEBUG MESSAGE ***/
 
       // try drawing a heatmap for current frame
@@ -328,27 +300,31 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       ROS_INFO("Frame: %d\n", frame_count);
 
       /*** BEGIN DEBUG MESSAGE ***/
-      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-      export_csv << "Listing detected vehicles in frame: " << frame_count << "\n";
-      export_csv.close();
-      for(int i = 0; i < vehicles.size(); i++){
+      #ifdef ENABLE_DEBUG_MODE
         export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "UniqueID:" << vehicles[i].detection_ID <<"\n";
-        export_csv << "X: " << vehicles[i].x <<"\n";
-        export_csv << "Y: " << vehicles[i].y <<"\n";
+        export_csv << "Listing detected vehicles in frame: " << frame_count << "\n";
         export_csv.close();
-        ROS_INFO("Unique ID: %d\n", vehicles[i].detection_ID);
-        ROS_INFO("X: %d\n", vehicles[i].x);
-        ROS_INFO("Y: %d\n", vehicles[i].y);
-      }
+        for(int i = 0; i < vehicles.size(); i++){
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "UniqueID:" << vehicles[i].detection_ID <<"\n";
+          export_csv << "X: " << vehicles[i].x <<"\n";
+          export_csv << "Y: " << vehicles[i].y <<"\n";
+          export_csv.close();
+          ROS_INFO("Unique ID: %d\n", vehicles[i].detection_ID);
+          ROS_INFO("X: %d\n", vehicles[i].x);
+          ROS_INFO("Y: %d\n", vehicles[i].y);
+        }
+      #endif
       /*** END DEBUG MESSAGE ***/
 
       if(vehicles.size() != 0){
         /*** BEGIN DEBUG MESSAGE ***/
-        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-        export_csv << "----------\n";
-        export_csv << "Overwriting current frame vehicles to previous vehicles\n";
-        export_csv.close();
+        #ifdef ENABLE_DEBUG_MODE
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+          export_csv << "----------\n";
+          export_csv << "Overwriting current frame vehicles to previous vehicles\n";
+          export_csv.close();
+        #endif
         /*** END DEBUG MESSAGE ***/
         prev_vehicles = vehicles; // only overwrite when new vehicles infos are present
       }
@@ -356,12 +332,13 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
     }
 
     /*** BEGIN DEBUG MESSAGE ***/
-    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
-    export_csv << "----------\n";
-    export_csv << "Wiping current frame vehicles\n";
-    export_csv.close();
+    #ifdef ENABLE_DEBUG_MODE
+      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
+      export_csv << "----------\n";
+      export_csv << "Wiping current frame vehicles\n";
+      export_csv.close();
+    #endif
     /*** END DEBUG MESSAGE ***/
-
     vehicles.clear();
     frame_count++;
   }
