@@ -44,18 +44,12 @@ struct vehicle{
   long int y_dimension;
 };
 
-// define an instance of checkpoint inthe frame
-struct checkpoint{
-  std::string VRI;
-  long int timestamp;
-};
-
 // define each instance of tracked vehicle after processing
 struct tracked_vehicle{
   int unique_ID;
   std::string vehicle_class;
-  float velocity;
-  std::vector<checkpoint> checkpoints;
+  float prev_checkpoint_time;
+  float current_checkpoint_time;
 };
 
 // OpenCV Related Global Variables
@@ -64,6 +58,7 @@ cv::Point center_point;
 std::vector<cv::Point> trajectory_points;
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
 std::vector<vehicle> prev_vehicles; // vehicles and their coordinates in previous frame
+std::vector<tracked_vehicle> tracked_vehicles; // tracked vehicles
 
 // Tracker Related Global Variables
 int maximum_ID = 0;

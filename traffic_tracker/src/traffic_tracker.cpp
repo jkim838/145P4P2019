@@ -277,6 +277,68 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       }
 
       /*** DEBUG: PUT VRI CODE HERE? ***/
+      // What we need:
+      //
+      //      std::vector<long int> IDs_To_Track // list of unique IDs to track between ROIs...
+      //
+      //      struct tracked_vehicle{
+      //        long int uniqueID; // unique ID of the vehicle to track
+      //        std::string Class; // vehicle type
+      //        std::vector<float> timestamps; // system time recorded every time vehicle enters the ROI
+      //        std::vector<int> checkpoint_number; // list of ROIs the vehicle has passed through
+      //      }
+      //
+      //      std::vector<tracked_vehicle> tracked_vehicles // list of tracked vehicles
+      //
+      //      struct msg_vehicle{
+      //        long int uniqueID; // unique ID of vehicle transmitted as ROS msg
+      //        float velocity; // velocity of the vehicle transmitted as ROS msg
+      //        std::string Class; // class of vehicle transmitted as ROS msg
+      //        std::vector<int> checkpoint_numbers // list of checkpoints vehicle traveled, as ROS msg
+      //      }
+      //
+      //      std::vector<msg_vehicle> msg_vehicles // list of vehicles to be transmitted as ROS msg
+      //
+      //      int cp_begin_y // y-coordinate of the first checkpoint
+      //
+      //      int cp_end_y // y-coordinate of the last checkpoint
+      //
+      //      int cp_quantity // number of desired checkpoints --
+      //
+      //      std::vector<int> cp_coords // checkpoint coordinates are determined by:
+      //                                    cp_coords.push_back(cp_begin_y);
+      //                                    int cp_total_d = max(cp_begin_y, cp_end_y) - min(cp_begin_y, cp_end_y);
+      //                                    for(i = 0; i < checkpoint_quantity; i++){
+      //                                      int cp_coord = cp_begin_y +/- (cp_total_d/cp_quantity) * (i+1);
+      //                                      cp_coords.push_back(cp_coord);
+      //                                    }
+      //                                    cp_coords.push_back(cp_end_y);
+      //
+      // On each frame, compare elements (uniqueID) in "IDs_To_Track" to "vehicles[i].detection_ID"
+      //      if match: check if vehicles[i].y.isMember(cp_coords)
+      //        if true: determine the "checkpoint_number" based on vehicles[i].y (as ROIs are placed evenly apart)
+      //                 if checkpoint_number == cp_number_end:
+      //                      i. the vehicle is at the end of the ROI. using accumulated "checkpoint_number" and "timestamps", calculate vehicle velocity
+      //                         velocity = cp_distance.inMeters / (timestamp.last() - timestamp.first());
+      //                      ii. append to msg_vehicles,
+      //
+      //                          e.g. msg_vehicle vehicle_to_push = {unique_ID, velocity, Class, checkpoint_numbers};
+      //                              msg_vehicles.push_back(vehicle_to_push);
+      //
+      //                 else, the vehicle has not yet reached the end of the checkpoint, therefore:
+      //                   i. from vector "tracked_vehicles" find the index number of the element with uniqueID == vehicles[i].detection_ID
+      //
+      //                      e.g. int index_number;
+      //                           for(int j = 0; j < tracked_vehicles.size(); j++){
+      //                            if(tracked_vehicles[j].uniqueID == vehicles[i].detection_ID){
+      //                             index_number = j;
+      //                            }
+      //                           }
+      //
+      //                   ii. once index number is found, access the instance of "tracked_vehicle" with tracked_vehicles[index_number].
+      //                        append the checkpoint number and timestamp.
+      //      if no match: do nothing
+      //
 
       /*** BEGIN DEBUG MESSAGE ***/
       #ifdef ENABLE_DEBUG_MODE
