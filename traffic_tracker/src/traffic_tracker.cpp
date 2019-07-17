@@ -305,7 +305,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       #endif
 
       for(int i = 0; i < vehicles.size(); i++){
-        if(vehicles[i].y < (cp_begin_y - 10) || vehicles[i].y >= (cp_begin_y + 10)){
+        if(vehicles[i].y >= (cp_end_y - 5) && vehicles[i].y <= (cp_begin_y + 5)){
           // vehicle is entering the first ROI
           // Find out which ROI the vehicle has passed...
           TrackingIDs.push_back(vehicles[i].detection_ID);
@@ -316,7 +316,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           timestamp_vector.push_back(timestamp_now);
 
           // Get current cpID
-          int cpID_now = 0;
+          int cpID_now;
+          for(int j = 0; j < cp_coords_y.size(); j++){
+            if(vehicles[i].y > (cp_coords_y[j] - 5) && vehicles[i].y < (cp_coords_y[j] + 5)){
+              cpID_now = j;
+            }
+          }
           std::vector<int> cpID_vector;
           cpID_vector.push_back(cpID_now);
 
@@ -326,44 +331,73 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
           #ifdef ROI_DEBUG_MODE
             ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 0 << "\n";
+            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << cpID_now << "\n";
             ROI_csv.close();
           #endif
 
         }
-        else{
-          //Find cpID
-          /***
+        else if(vehicles[i].y > (cp_end_y - 5) && vehicles[i].y < (cp_end_y + 5)){
+          // The vehicle has left the ROI
+          // Find the cpID of the last ROI -- verified code as working at 1417
           int cpID;
           for(int j = 0; j < cp_coords_y.size(); j++){
-            if(vehicles[i].y <= cp_coords_y[j] && vehicles[i].y > cp_coords_y[j+1]){
+            if(vehicles[i].y > (cp_coords_y[j] - 5) && vehicles[i].y < (cp_coords_y[j] + 5)){
               cpID = j;
             }
           }
 
-          if(cpID != cp_coords_y.size() && cpID != 0){
-            // from TrackingVehicles, search for the index number of element with matching unique ID...
-            int index_number;
-            for(int j = 0; j < TrackingVehicles.size(); j++){
-              if(TrackingVehicles[j].unique_ID == vehicles[i].detection_ID){
-                index_number = j;
-              }
+          #ifdef ROI_DEBUG_MODE
+            ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << cpID << "\n";
+            ROI_csv.close();
+          #endif
+
+          //find from the TrackingVehicles using UniqueID
+          int index_number;
+          for(int j = 0; j < TrackingVehicles.size(); j++){
+            if(TrackingVehicles[j].unique_ID == vehicles[i].detection_ID){
+              index_number = j;
             }
-            // append current timestamp and cpID to the vectors...
-            float timestamp_now = 0.003; //dummy value
-            TrackingVehicles[index_number].timestamps.push_back(timestamp_now);
-            TrackingVehicles[index_number].checkpoints.push_back(cpID);
           }
+          TrackingVehicles.erase(TrackingVehicles.begin() + index_number);
 
           #ifdef ROI_DEBUG_MODE
             ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << cpID << "\n";
+            ROI_csv << "Erasing element ID: " << vehicles[i].detection_ID <<" from the TrackingVehicles\n";
+            ROI_csv << "RESULT:\n";
+            ROI_csv << "ID:";
+            for(int j = 0; j < TrackingVehicles.size(); j++){
+              ROI_csv << TrackingVehicles[i].unique_ID <<",";
+            }
+            ROI_csv << "\n Class:";
+            for(int j = 0; j < TrackingVehicles.size(); j++){
+              ROI_csv << TrackingVehicles[i].vehicle_class <<",";
+            }
+            ROI_csv << "\n";
             ROI_csv.close();
           #endif
-          ***/
+
         }
 
       }
+
+      #ifdef ROI_DEBUG_MODE
+        ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+        ROI_csv << "==========:\n";
+        ROI_csv << "TrackingVehicles Elements:\n";
+        for(int i = 0; i < TrackingVehicles.size(); i++){
+          ROI_csv << "{ID:" << TrackingVehicles[i].unique_ID << ", Class:" << TrackingVehicles[i].vehicle_class << ", Timestamps:[";
+          for(int j = 0; j < TrackingVehicles[i].timestamps.size(); j++){
+            ROI_csv << TrackingVehicles[i].timestamps[j] << ",";
+          }
+          ROI_csv << "], Checkpoints:[";
+          for(int j = 0; j < TrackingVehicles[i].checkpoints.size(); j++){
+            ROI_csv << TrackingVehicles[i].checkpoints[j] << ",";
+          }
+          ROI_csv << "]}\n";
+        }
+        ROI_csv.close();
+      #endif
 
       // What we need:
       //

@@ -67,9 +67,9 @@ cv::Point center_point;
 std::vector<cv::Point> trajectory_points;
 
 // Tracker Related Global Variables
-int cp_begin_y = 656;
+int cp_begin_y = 655;
 int cp_end_y = 270;
-int cp_quantity = 0;
+int cp_quantity = 1;
 std::vector<int> cp_coords_y;
 
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
@@ -88,7 +88,7 @@ void initialize_vri(){
   cp_coords_y.push_back(cp_begin_y);
   for(int i = 0; i < cp_quantity; i++){
     int cp_total_distance = std::max(cp_begin_y, cp_end_y) - std::min(cp_begin_y, cp_end_y); // total distance between the beginning and the end of the checkpoint
-    int coords_to_push = cp_begin_y - (cp_total_distance / cp_quantity) * (i + 1);
+    int coords_to_push = cp_begin_y - (cp_total_distance / (cp_quantity+1)) * (i + 1);
     cp_coords_y.push_back(coords_to_push);
   }
   cp_coords_y.push_back(cp_end_y);
