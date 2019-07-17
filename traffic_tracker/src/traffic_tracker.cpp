@@ -15,7 +15,7 @@ int main(int arg, char **argv){
     for(int i = 0; i < cp_coords_y.size(); i++){
       ROI_csv << i <<",";
     }
-    ROI_csv << "\n y-coord:";
+    ROI_csv << "\ny-coord:";
     for(int i = 0; i < cp_coords_y.size(); i++){
       ROI_csv << cp_coords_y[i] <<",";
     }
@@ -294,7 +294,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
       }
 
-      /*** DEBUG: PUT VRI CODE HERE? ***/
+      /*** DEBUG: VRI CODE FROM HERE ***/
+
       #ifdef ROI_DEBUG_MODE
         std::ofstream ROI_csv;
         ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
@@ -304,87 +305,134 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         ROI_csv.close();
       #endif
 
+      /*** ITERATE THROUGH ALL VEHICLES IN THE FRAME ***/
       for(int i = 0; i < vehicles.size(); i++){
-        if(vehicles[i].y >= (cp_end_y - 5) && vehicles[i].y <= (cp_begin_y + 5)){
-          // vehicle is entering the first ROI
-          // Find out which ROI the vehicle has passed...
-          TrackingIDs.push_back(vehicles[i].detection_ID);
-
-          // Get current timestamp
-          float timestamp_now = 0.001; //dummy value
-          std::vector<float> timestamp_vector;
-          timestamp_vector.push_back(timestamp_now);
-
-          // Get current cpID
-          int cpID_now;
-          for(int j = 0; j < cp_coords_y.size(); j++){
-            if(vehicles[i].y > (cp_coords_y[j] - 5) && vehicles[i].y < (cp_coords_y[j] + 5)){
-              cpID_now = j;
+        /*** THE VEHICLE IS ENTERING THE FIRST ROI ***/
+        if(vehicles[i].y > (cp_begin_y - 30) && vehicles[i].y <= (cp_begin_y + 30)){
+          // See if there is a previous entry with same unique ID. If no, create a new entry to TrackingVehicles
+          bool id_match = false;
+          int id_to_find = vehicles[i].detection_ID;
+          for(int j = 0; j < TrackingVehicles.size(); j++){
+            if(TrackingVehicles[j].unique_ID == id_to_find){
+              // a match has been found. previous entry exists
+              id_match = true;
+              // see cpID was already recorded for this element
+              bool already_appended = false;
+              for(int k = 0; k < TrackingVehicles[j].checkpoints.size(); k++){
+                if(TrackingVehicles[j].checkpoints[k] == 0){
+                  already_appended = true;
+                }
+              }
+              if(!already_appended){
+                // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
+                float timestamp_now = 0.002; //dummy value
+                TrackingVehicles[j].timestamps.push_back(timestamp_now);
+                TrackingVehicles[j].checkpoints.push_back(0);
+              }
             }
           }
-          std::vector<int> cpID_vector;
-          cpID_vector.push_back(cpID_now);
 
-          // Create an instance of tracked_vehicle for currently observed vehicle
-          tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
-          TrackingVehicles.push_back(currentVehicle);
+          if(!id_match){
+            // no match found... first of its kind...
+            // Get current timestamp
+            float timestamp_now = 0.001; //dummy value
+            std::vector<float> timestamp_vector;
+            timestamp_vector.push_back(timestamp_now);
 
-          #ifdef ROI_DEBUG_MODE
-            ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << cpID_now << "\n";
-            ROI_csv.close();
-          #endif
+            std::vector<int> cpID_vector;
+            cpID_vector.push_back(0);
 
+            // Create an instance of tracked_vehicle for currently observed vehicle
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            TrackingVehicles.push_back(currentVehicle);
+
+            #ifdef ROI_DEBUG_MODE
+              ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 0 << "\n";
+              ROI_csv.close();
+            #endif
+          }
         }
-        else if(vehicles[i].y > (cp_end_y - 5) && vehicles[i].y < (cp_end_y + 5)){
-          // The vehicle has left the ROI
-          // Find the cpID of the last ROI -- verified code as working at 1417
-          int cpID;
-          for(int j = 0; j < cp_coords_y.size(); j++){
-            if(vehicles[i].y > (cp_coords_y[j] - 5) && vehicles[i].y < (cp_coords_y[j] + 5)){
-              cpID = j;
+
+        /***TODO: ADD A CASE WHERE VEHICLE ENTERS n-th ROI ***/
+
+        /*** VEHICLE HAS LEFT THE LAST ROI ***/
+        else if(vehicles[i].y >= (cp_end_y - 30) && vehicles[i].y <= (cp_end_y + 30)){
+
+          // DEBUG: Find the cpID of the last ROI -- verified code as working at 1417
+          #ifdef ROI_DEBUG_MODE
+            int cpID;
+            for(int j = 0; j < cp_coords_y.size(); j++){
+              if(vehicles[i].y > (cp_coords_y[j] - 5) && vehicles[i].y < (cp_coords_y[j] + 5)){
+                cpID = j;
+              }
+            }
+          #endif
+
+          /*** Appending Last ROI Checkpoint and Timestamp ***/
+          // Search through TrackingVehicles to find matching element. Append timestamp and CPID to the element.
+          int id_to_find = vehicles[i].detection_ID;
+          for(int j = 0; j < TrackingVehicles.size(); j++){
+            if(TrackingVehicles[j].unique_ID == id_to_find){
+              // a match has been found.
+              // see cpID was already recorded for this element
+              bool already_appended = false;
+              for(int k = 0; k < TrackingVehicles[j].checkpoints.size(); k++){
+                if(TrackingVehicles[j].checkpoints[k] == 2){
+                  already_appended = true;
+                }
+              }
+              if(!already_appended){
+                float timestamp_now = 0.002; //dummy value
+                TrackingVehicles[j].timestamps.push_back(timestamp_now);
+                TrackingVehicles[j].checkpoints.push_back(2);
+              }
             }
           }
 
           #ifdef ROI_DEBUG_MODE
             ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << cpID << "\n";
+            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 2 << "\n";
+            ROI_csv << "==========:\n";
+            ROI_csv << "TrackingVehicles Elements:\n";
+            for(int i = 0; i < TrackingVehicles.size(); i++){
+              ROI_csv << "{ID:" << TrackingVehicles[i].unique_ID << ", Class:" << TrackingVehicles[i].vehicle_class << ", Timestamps:[";
+              for(int j = 0; j < TrackingVehicles[i].timestamps.size(); j++){
+                ROI_csv << TrackingVehicles[i].timestamps[j] << ",";
+              }
+              ROI_csv << "], Checkpoints:[";
+              for(int j = 0; j < TrackingVehicles[i].checkpoints.size(); j++){
+                ROI_csv << TrackingVehicles[i].checkpoints[j] << ",";
+              }
+              ROI_csv << "]}\n";
+            }
             ROI_csv.close();
           #endif
 
+          /***TODO : PUBLISH MESSAGE HERE***/
+
+          /*** ERASING ELEMENTS FROM TRACKINGVEHICLES ***/
           //find from the TrackingVehicles using UniqueID
-          int index_number;
           for(int j = 0; j < TrackingVehicles.size(); j++){
             if(TrackingVehicles[j].unique_ID == vehicles[i].detection_ID){
-              index_number = j;
+              TrackingVehicles.erase(TrackingVehicles.begin() + j);
+              #ifdef ROI_DEBUG_MODE
+                ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+                ROI_csv << "==========:\n";
+                ROI_csv << "Erasing element ID: " << vehicles[i].detection_ID <<" from the TrackingVehicles\n";
+                ROI_csv << "==========:\n";
+                ROI_csv.close();
+              #endif
             }
           }
-          TrackingVehicles.erase(TrackingVehicles.begin() + index_number);
-
-          #ifdef ROI_DEBUG_MODE
-            ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Erasing element ID: " << vehicles[i].detection_ID <<" from the TrackingVehicles\n";
-            ROI_csv << "RESULT:\n";
-            ROI_csv << "ID:";
-            for(int j = 0; j < TrackingVehicles.size(); j++){
-              ROI_csv << TrackingVehicles[i].unique_ID <<",";
-            }
-            ROI_csv << "\n Class:";
-            for(int j = 0; j < TrackingVehicles.size(); j++){
-              ROI_csv << TrackingVehicles[i].vehicle_class <<",";
-            }
-            ROI_csv << "\n";
-            ROI_csv.close();
-          #endif
-
+          //TODO: IMPLEMENT A FEATURE WHERE ELEMENTS THAT ARE TOO OLD ARE ERASED
         }
-
       }
 
       #ifdef ROI_DEBUG_MODE
         ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
         ROI_csv << "==========:\n";
-        ROI_csv << "TrackingVehicles Elements:\n";
+        ROI_csv << "Tracked Vehicles Final to Frame:\n";
         for(int i = 0; i < TrackingVehicles.size(); i++){
           ROI_csv << "{ID:" << TrackingVehicles[i].unique_ID << ", Class:" << TrackingVehicles[i].vehicle_class << ", Timestamps:[";
           for(int j = 0; j < TrackingVehicles[i].timestamps.size(); j++){
@@ -399,68 +447,6 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         ROI_csv.close();
       #endif
 
-      // What we need:
-      //
-      //      std::vector<long int> IDs_To_Track // list of unique IDs to track between ROIs...
-      //
-      //      struct tracked_vehicle{
-      //        long int uniqueID; // unique ID of the vehicle to track
-      //        std::string Class; // vehicle type
-      //        std::vector<float> timestamps; // system time recorded every time vehicle enters the ROI
-      //        std::vector<int> checkpoint_number; // list of ROIs the vehicle has passed through
-      //      }
-      //
-      //      std::vector<tracked_vehicle> tracked_vehicles // list of tracked vehicles
-      //
-      //      struct msg_vehicle{
-      //        long int uniqueID; // unique ID of vehicle transmitted as ROS msg
-      //        float velocity; // velocity of the vehicle transmitted as ROS msg
-      //        std::string Class; // class of vehicle transmitted as ROS msg
-      //        std::vector<int> checkpoint_numbers // list of checkpoints vehicle traveled, as ROS msg
-      //      }
-      //
-      //      std::vector<msg_vehicle> msg_vehicles // list of vehicles to be transmitted as ROS msg
-      //
-      //      int cp_begin_y // y-coordinate of the first checkpoint
-      //
-      //      int cp_end_y // y-coordinate of the last checkpoint
-      //
-      //      int cp_quantity // number of desired checkpoints --
-      //
-      //      std::vector<int> cp_coords // checkpoint coordinates are determined by:
-      //                                    cp_coords.push_back(cp_begin_y);
-      //                                    int cp_total_d = max(cp_begin_y, cp_end_y) - min(cp_begin_y, cp_end_y);
-      //                                    for(i = 0; i < checkpoint_quantity; i++){
-      //                                      int cp_coord = cp_begin_y +/- (cp_total_d/cp_quantity) * (i+1);
-      //                                      cp_coords.push_back(cp_coord);
-      //                                    }
-      //                                    cp_coords.push_back(cp_end_y);
-      //
-      // On each frame, check if vehicles[i].y.isMember(cp_coords_y),compare elements (uniqueID) in "IDs_To_Track" to "vehicles[i].detection_ID"
-      //      if match: for all vehicles[i].y > cp_begin_y, append unique ID to "IDs_To_Track"
-      //                determine the "checkpoint_number" based on vehicles[i].y (as ROIs are placed evenly apart)
-      //                if checkpoint_number == cp_number_end:
-      //                      i. the vehicle is at the end of the ROI. using accumulated "checkpoint_number" and "timestamps", calculate vehicle velocity
-      //                         velocity = cp_distance.inMeters / (timestamp.last() - timestamp.first());
-      //                      ii. append to msg_vehicles,
-      //
-      //                          e.g. msg_vehicle vehicle_to_push = {unique_ID, velocity, Class, checkpoint_numbers};
-      //                              msg_vehicles.push_back(vehicle_to_push);
-      //
-      //                else, the vehicle has not yet reached the end of the checkpoint, therefore:
-      //                   i. from vector "tracked_vehicles" find the index number of the element with uniqueID == vehicles[i].detection_ID
-      //
-      //                      e.g. int index_number;
-      //                           for(int j = 0; j < tracked_vehicles.size(); j++){
-      //                            if(tracked_vehicles[j].uniqueID == vehicles[i].detection_ID){
-      //                             index_number = j;
-      //                            }
-      //                           }
-      //
-      //                   ii. once index number is found, access the instance of "tracked_vehicle" with tracked_vehicles[index_number].
-      //                        append the checkpoint number and timestamp.
-      //      if no match: do nothing
-      //
 
       /*** BEGIN DEBUG MESSAGE ***/
       #ifdef ENABLE_DEBUG_MODE

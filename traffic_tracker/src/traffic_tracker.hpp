@@ -68,7 +68,7 @@ std::vector<cv::Point> trajectory_points;
 
 // Tracker Related Global Variables
 int cp_begin_y = 655;
-int cp_end_y = 270;
+int cp_end_y = 455;
 int cp_quantity = 1;
 std::vector<int> cp_coords_y;
 
