@@ -6,6 +6,24 @@ int main(int arg, char **argv){
   ros::NodeHandle tt_nh;
   ros::Rate loop_rate(1000);
 
+  initialize_vri();
+  #ifdef ROI_DEBUG_MODE
+    std::ofstream ROI_csv;
+    ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    ROI_csv << "Initializing ROIS:\n";
+    ROI_csv << "cpID:";
+    for(int i = 0; i < cp_coords_y.size(); i++){
+      ROI_csv << i <<",";
+    }
+    ROI_csv << "\n y-coord:";
+    for(int i = 0; i < cp_coords_y.size(); i++){
+      ROI_csv << cp_coords_y[i] <<",";
+    }
+    ROI_csv << "\n";
+    ROI_csv << "==========\n";
+    ROI_csv.close();
+  #endif
+
   image_transport::ImageTransport transport_image(tt_nh);
   ros::Subscriber tt_bbox_sub = tt_nh.subscribe("/darknet_ros/bounding_boxes", 1000, extract_bbox);
   ros::Subscriber tt_image_sub = tt_nh.subscribe("/darknet_ros/detection_image", 1000, extract_detection_image);
@@ -277,6 +295,76 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       }
 
       /*** DEBUG: PUT VRI CODE HERE? ***/
+      #ifdef ROI_DEBUG_MODE
+        std::ofstream ROI_csv;
+        ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+        ROI_csv << "==========\n";
+        ROI_csv << "Frame ID:" << frame_count <<"\n";
+        ROI_csv << "==========\n";
+        ROI_csv.close();
+      #endif
+
+      for(int i = 0; i < vehicles.size(); i++){
+        if(vehicles[i].y < (cp_begin_y - 10) || vehicles[i].y >= (cp_begin_y + 10)){
+          // vehicle is entering the first ROI
+          // Find out which ROI the vehicle has passed...
+          TrackingIDs.push_back(vehicles[i].detection_ID);
+
+          // Get current timestamp
+          float timestamp_now = 0.001; //dummy value
+          std::vector<float> timestamp_vector;
+          timestamp_vector.push_back(timestamp_now);
+
+          // Get current cpID
+          int cpID_now = 0;
+          std::vector<int> cpID_vector;
+          cpID_vector.push_back(cpID_now);
+
+          // Create an instance of tracked_vehicle for currently observed vehicle
+          tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+          TrackingVehicles.push_back(currentVehicle);
+
+          #ifdef ROI_DEBUG_MODE
+            ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 0 << "\n";
+            ROI_csv.close();
+          #endif
+
+        }
+        else{
+          //Find cpID
+          /***
+          int cpID;
+          for(int j = 0; j < cp_coords_y.size(); j++){
+            if(vehicles[i].y <= cp_coords_y[j] && vehicles[i].y > cp_coords_y[j+1]){
+              cpID = j;
+            }
+          }
+
+          if(cpID != cp_coords_y.size() && cpID != 0){
+            // from TrackingVehicles, search for the index number of element with matching unique ID...
+            int index_number;
+            for(int j = 0; j < TrackingVehicles.size(); j++){
+              if(TrackingVehicles[j].unique_ID == vehicles[i].detection_ID){
+                index_number = j;
+              }
+            }
+            // append current timestamp and cpID to the vectors...
+            float timestamp_now = 0.003; //dummy value
+            TrackingVehicles[index_number].timestamps.push_back(timestamp_now);
+            TrackingVehicles[index_number].checkpoints.push_back(cpID);
+          }
+
+          #ifdef ROI_DEBUG_MODE
+            ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << cpID << "\n";
+            ROI_csv.close();
+          #endif
+          ***/
+        }
+
+      }
+
       // What we need:
       //
       //      std::vector<long int> IDs_To_Track // list of unique IDs to track between ROIs...
@@ -314,10 +402,10 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       //                                    }
       //                                    cp_coords.push_back(cp_end_y);
       //
-      // On each frame, compare elements (uniqueID) in "IDs_To_Track" to "vehicles[i].detection_ID"
-      //      if match: check if vehicles[i].y.isMember(cp_coords)
-      //        if true: determine the "checkpoint_number" based on vehicles[i].y (as ROIs are placed evenly apart)
-      //                 if checkpoint_number == cp_number_end:
+      // On each frame, check if vehicles[i].y.isMember(cp_coords_y),compare elements (uniqueID) in "IDs_To_Track" to "vehicles[i].detection_ID"
+      //      if match: for all vehicles[i].y > cp_begin_y, append unique ID to "IDs_To_Track"
+      //                determine the "checkpoint_number" based on vehicles[i].y (as ROIs are placed evenly apart)
+      //                if checkpoint_number == cp_number_end:
       //                      i. the vehicle is at the end of the ROI. using accumulated "checkpoint_number" and "timestamps", calculate vehicle velocity
       //                         velocity = cp_distance.inMeters / (timestamp.last() - timestamp.first());
       //                      ii. append to msg_vehicles,
@@ -325,7 +413,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
       //                          e.g. msg_vehicle vehicle_to_push = {unique_ID, velocity, Class, checkpoint_numbers};
       //                              msg_vehicles.push_back(vehicle_to_push);
       //
-      //                 else, the vehicle has not yet reached the end of the checkpoint, therefore:
+      //                else, the vehicle has not yet reached the end of the checkpoint, therefore:
       //                   i. from vector "tracked_vehicles" find the index number of the element with uniqueID == vehicles[i].detection_ID
       //
       //                      e.g. int index_number;
