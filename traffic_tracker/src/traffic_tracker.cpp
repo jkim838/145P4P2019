@@ -200,7 +200,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
           float IOU = (float)area_intersection / (float)area_union;
 
-          float IOU_Threshold = 0.35;
+          float IOU_Threshold = 0.20;
           int abs_x_diff = abs(vehicles[i].x - prev_vehicles[j].x);
           int abs_y_diff = abs(vehicles[i].y - prev_vehicles[j].y);
           int euclid_distance = hypot(abs_x_diff, abs_y_diff);
@@ -386,14 +386,18 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 float timestamp_now = 0.002; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(2);
+                #ifdef ROI_DEBUG_MODE
+                  ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+                  ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 2 << "\n";
+                  ROI_csv << "==========:\n";
+                  ROI_csv.close();
+                #endif
               }
             }
           }
 
           #ifdef ROI_DEBUG_MODE
             ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 2 << "\n";
-            ROI_csv << "==========:\n";
             ROI_csv << "TrackingVehicles Elements:\n";
             for(int i = 0; i < TrackingVehicles.size(); i++){
               ROI_csv << "{ID:" << TrackingVehicles[i].unique_ID << ", Class:" << TrackingVehicles[i].vehicle_class << ", Timestamps:[";

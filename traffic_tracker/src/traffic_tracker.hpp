@@ -26,7 +26,7 @@
 #include <opencv2/videoio.hpp>
 
 /*** Macro Definitions ***/
-//#define ENABLE_DEBUG_MODE
+#define ENABLE_DEBUG_MODE
 #define ROI_DEBUG_MODE
 
 /*** Function Prototypes ***/
@@ -67,8 +67,8 @@ cv::Point center_point;
 std::vector<cv::Point> trajectory_points;
 
 // Tracker Related Global Variables
-int cp_begin_y = 655;
-int cp_end_y = 455;
+int cp_begin_y = 860;
+int cp_end_y = 315;
 int cp_quantity = 1;
 std::vector<int> cp_coords_y;
 
