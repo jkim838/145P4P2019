@@ -355,6 +355,95 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
         }
 
         /***TODO: ADD A CASE WHERE VEHICLE ENTERS n-th ROI ***/
+        else if(vehicles[i].y >= (655 - 30) && vehicles[i].y <= (655 + 30)){
+          bool id_match = false;
+          int id_to_find = vehicles[i].detection_ID;
+          for(int j = 0; j < TrackingVehicles.size(); j++){
+            if(TrackingVehicles[j].unique_ID == id_to_find){
+              // a match has been found. previous entry exists
+              id_match = true;
+              // see cpID was already recorded for this element
+              bool already_appended = false;
+              for(int k = 0; k < TrackingVehicles[j].checkpoints.size(); k++){
+                if(TrackingVehicles[j].checkpoints[k] == 1){
+                  already_appended = true;
+                }
+              }
+              if(!already_appended){
+                // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
+                float timestamp_now = 0.0015; //dummy value
+                TrackingVehicles[j].timestamps.push_back(timestamp_now);
+                TrackingVehicles[j].checkpoints.push_back(1);
+              }
+            }
+          }
+
+          if(!id_match){
+            // no match found... first of its kind...
+            // Get current timestamp
+            float timestamp_now = 0.0015; //dummy value
+            std::vector<float> timestamp_vector;
+            timestamp_vector.push_back(timestamp_now);
+
+            std::vector<int> cpID_vector;
+            cpID_vector.push_back(1);
+
+            // Create an instance of tracked_vehicle for currently observed vehicle
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            TrackingVehicles.push_back(currentVehicle);
+
+            #ifdef ROI_DEBUG_MODE
+              ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 1 << "\n";
+              ROI_csv.close();
+            #endif
+          }
+        }
+
+        else if(vehicles[i].y >= (455 - 30) && vehicles[i].y <= (455 + 30)){
+          bool id_match = false;
+          int id_to_find = vehicles[i].detection_ID;
+          for(int j = 0; j < TrackingVehicles.size(); j++){
+            if(TrackingVehicles[j].unique_ID == id_to_find){
+              // a match has been found. previous entry exists
+              id_match = true;
+              // see cpID was already recorded for this element
+              bool already_appended = false;
+              for(int k = 0; k < TrackingVehicles[j].checkpoints.size(); k++){
+                if(TrackingVehicles[j].checkpoints[k] == 2){
+                  already_appended = true;
+                }
+              }
+              if(!already_appended){
+                // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
+                float timestamp_now = 0.0015; //dummy value
+                TrackingVehicles[j].timestamps.push_back(timestamp_now);
+                TrackingVehicles[j].checkpoints.push_back(2);
+              }
+            }
+          }
+
+          if(!id_match){
+            // no match found... first of its kind...
+            // Get current timestamp
+            float timestamp_now = 0.002; //dummy value
+            std::vector<float> timestamp_vector;
+            timestamp_vector.push_back(timestamp_now);
+
+            std::vector<int> cpID_vector;
+            cpID_vector.push_back(2);
+
+            // Create an instance of tracked_vehicle for currently observed vehicle
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            TrackingVehicles.push_back(currentVehicle);
+
+            #ifdef ROI_DEBUG_MODE
+              ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 2 << "\n";
+              ROI_csv.close();
+            #endif
+          }
+        }
 
         /*** VEHICLE HAS LEFT THE LAST ROI ***/
         else if(vehicles[i].y >= (cp_end_y - 30) && vehicles[i].y <= (cp_end_y + 30)){
@@ -378,17 +467,17 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               // see cpID was already recorded for this element
               bool already_appended = false;
               for(int k = 0; k < TrackingVehicles[j].checkpoints.size(); k++){
-                if(TrackingVehicles[j].checkpoints[k] == 2){
+                if(TrackingVehicles[j].checkpoints[k] == 3){
                   already_appended = true;
                 }
               }
               if(!already_appended){
-                float timestamp_now = 0.002; //dummy value
+                float timestamp_now = 0.0025; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
-                TrackingVehicles[j].checkpoints.push_back(2);
+                TrackingVehicles[j].checkpoints.push_back(3);
                 #ifdef ROI_DEBUG_MODE
                   ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-                  ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 2 << "\n";
+                  ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 3 << "\n";
                   ROI_csv << "==========:\n";
                   ROI_csv.close();
                 #endif
