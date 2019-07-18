@@ -325,7 +325,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               }
               if(!already_appended){
                 // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
-                float timestamp_now = 0.002; //dummy value
+                unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();;
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(0);
               }
@@ -335,8 +335,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           if(!id_match){
             // no match found... first of its kind...
             // Get current timestamp
-            float timestamp_now = 0.001; //dummy value
-            std::vector<float> timestamp_vector;
+            unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
+            std::vector<unsigned long> timestamp_vector;
             timestamp_vector.push_back(timestamp_now);
 
             std::vector<int> cpID_vector;
@@ -371,7 +371,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               }
               if(!already_appended){
                 // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
-                float timestamp_now = 0.0015; //dummy value
+                unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(1);
               }
@@ -381,8 +381,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           if(!id_match){
             // no match found... first of its kind...
             // Get current timestamp
-            float timestamp_now = 0.0015; //dummy value
-            std::vector<float> timestamp_vector;
+            unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
+            std::vector<unsigned long> timestamp_vector;
             timestamp_vector.push_back(timestamp_now);
 
             std::vector<int> cpID_vector;
@@ -400,7 +400,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           }
         }
 
-        else if(vehicles[i].y >= (455 - 30) && vehicles[i].y <= (455 + 30)){
+        else if(vehicles[i].y >= (430 - 30) && vehicles[i].y <= (430 + 30)){
           bool id_match = false;
           int id_to_find = vehicles[i].detection_ID;
           for(int j = 0; j < TrackingVehicles.size(); j++){
@@ -416,7 +416,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               }
               if(!already_appended){
                 // checkpoint ID (cpID) and timestamp is not yet recorded. Do so now.
-                float timestamp_now = 0.0015; //dummy value
+                unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(2);
               }
@@ -426,8 +426,8 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           if(!id_match){
             // no match found... first of its kind...
             // Get current timestamp
-            float timestamp_now = 0.002; //dummy value
-            std::vector<float> timestamp_vector;
+            unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
+            std::vector<unsigned long> timestamp_vector;
             timestamp_vector.push_back(timestamp_now);
 
             std::vector<int> cpID_vector;
@@ -472,7 +472,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 }
               }
               if(!already_appended){
-                float timestamp_now = 0.0025; //dummy value
+                unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(3);
                 #ifdef ROI_DEBUG_MODE

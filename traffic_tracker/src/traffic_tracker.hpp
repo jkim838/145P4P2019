@@ -11,6 +11,7 @@
 #include <fstream>
 #include <cstring>
 #include <cstdlib>
+#include <chrono>
 #include <string>
 #include <sstream>
 #include <math.h>
@@ -50,7 +51,7 @@ struct vehicle{
 struct tracked_vehicle{
   int unique_ID;
   std::string vehicle_class;
-  std::vector<float> timestamps;
+  std::vector<unsigned long> timestamps;
   std::vector<int> checkpoints;
 };
 
@@ -67,8 +68,8 @@ cv::Point center_point;
 std::vector<cv::Point> trajectory_points;
 
 // Tracker Related Global Variables
-int cp_begin_y = 860;
-int cp_end_y = 315;
+int cp_begin_y = 865;
+int cp_end_y = 310;
 int cp_quantity = 1;
 std::vector<int> cp_coords_y;
 
