@@ -328,6 +328,11 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();;
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(0);
+                #ifdef ROI_DEBUG_MODE
+                  ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+                  ROI_csv << "Element ID:" << vehicles[i].detection_ID <<" entered ROI:" << 0 << "\n";
+                  ROI_csv.close();
+                #endif
               }
             }
           }
@@ -343,12 +348,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
             cpID_vector.push_back(0);
 
             // Create an instance of tracked_vehicle for currently observed vehicle
-            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector, frame_count};
             TrackingVehicles.push_back(currentVehicle);
 
             #ifdef ROI_DEBUG_MODE
               ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 0 << "\n";
+              ROI_csv << "Tracking initialized for ID:" << vehicles[i].detection_ID <<" at ROI:" << 0 << "\n";
               ROI_csv.close();
             #endif
           }
@@ -374,6 +379,11 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(1);
+                #ifdef ROI_DEBUG_MODE
+                  ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+                  ROI_csv << "Element ID:" << vehicles[i].detection_ID <<" entered ROI:" << 1 << "\n";
+                  ROI_csv.close();
+                #endif
               }
             }
           }
@@ -389,12 +399,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
             cpID_vector.push_back(1);
 
             // Create an instance of tracked_vehicle for currently observed vehicle
-            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector, frame_count};
             TrackingVehicles.push_back(currentVehicle);
 
             #ifdef ROI_DEBUG_MODE
               ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 1 << "\n";
+              ROI_csv << "Tracking initialized for ID:" << vehicles[i].detection_ID <<" at ROI:" << 1 << "\n";
               ROI_csv.close();
             #endif
           }
@@ -419,6 +429,11 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 unsigned long timestamp_now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();; //dummy value
                 TrackingVehicles[j].timestamps.push_back(timestamp_now);
                 TrackingVehicles[j].checkpoints.push_back(2);
+                #ifdef ROI_DEBUG_MODE
+                  ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+                  ROI_csv << "Element ID:" << vehicles[i].detection_ID <<" entered ROI:" << 2 << "\n";
+                  ROI_csv.close();
+                #endif
               }
             }
           }
@@ -434,12 +449,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
             cpID_vector.push_back(2);
 
             // Create an instance of tracked_vehicle for currently observed vehicle
-            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector};
+            tracked_vehicle currentVehicle = {vehicles[i].detection_ID, vehicles[i].vehicle_class, timestamp_vector,cpID_vector, frame_count};
             TrackingVehicles.push_back(currentVehicle);
 
             #ifdef ROI_DEBUG_MODE
               ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-              ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" entered ROI: " << 2 << "\n";
+              ROI_csv << "Tracking initialized for ID:" << vehicles[i].detection_ID <<" at ROI:" << 2 << "\n";
               ROI_csv.close();
             #endif
           }
@@ -477,7 +492,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
                 TrackingVehicles[j].checkpoints.push_back(3);
                 #ifdef ROI_DEBUG_MODE
                   ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-                  ROI_csv << "Element ID: " << vehicles[i].detection_ID <<" has left the ROI:" << 3 << "\n";
+                  ROI_csv << "Tracking ended for ID:" << vehicles[i].detection_ID <<" at ROI:" << 3 << "\n";
                   ROI_csv << "==========:\n";
                   ROI_csv.close();
                 #endif
@@ -497,7 +512,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               for(int j = 0; j < TrackingVehicles[i].checkpoints.size(); j++){
                 ROI_csv << TrackingVehicles[i].checkpoints[j] << ",";
               }
-              ROI_csv << "]}\n";
+              ROI_csv << "], FOI:" << TrackingVehicles[i].frameInit << "}\n";
             }
             ROI_csv.close();
           #endif
@@ -512,7 +527,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
               #ifdef ROI_DEBUG_MODE
                 ROI_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
                 ROI_csv << "==========:\n";
-                ROI_csv << "Erasing element ID: " << vehicles[i].detection_ID <<" from the TrackingVehicles\n";
+                ROI_csv << "Erasing element ID:" << vehicles[i].detection_ID <<" from the TrackingVehicles\n";
                 ROI_csv << "==========:\n";
                 ROI_csv.close();
               #endif
@@ -535,7 +550,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
           for(int j = 0; j < TrackingVehicles[i].checkpoints.size(); j++){
             ROI_csv << TrackingVehicles[i].checkpoints[j] << ",";
           }
-          ROI_csv << "]}\n";
+          ROI_csv << "], FOI:" << TrackingVehicles[i].frameInit << "}\n";
         }
         ROI_csv.close();
       #endif

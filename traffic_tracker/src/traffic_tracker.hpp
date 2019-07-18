@@ -53,6 +53,7 @@ struct tracked_vehicle{
   std::string vehicle_class;
   std::vector<unsigned long> timestamps;
   std::vector<int> checkpoints;
+  long int frameInit; // frame which vehicle was initialized at
 };
 
 struct msg_vehicle{
