@@ -44,6 +44,7 @@ void displayFeed();
 void preprocessVehicles();
 void beginTracking();
 void prepareNextFrame();
+void generatePerspective();
 void debugListVehicle();
 void debugListFrame();
 

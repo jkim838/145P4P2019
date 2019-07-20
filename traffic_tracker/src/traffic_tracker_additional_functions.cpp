@@ -50,7 +50,12 @@ void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
 
 void displayFeed()
 {
-  cv::namedWindow("Tracker", CV_WINDOW_AUTOSIZE);
+  #ifdef ENABLE_DEBUG_MODE
+  cv::circle(frame, cv::Point(716,270), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1170,270), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,0), 2, 1);
+  #endif
   cv::imshow("Tracker", frame);
   cv::waitKey(30);
 }
@@ -320,4 +325,13 @@ void prepareNextFrame()
   export_csv << "Wiping current frame vehicles\n";
   export_csv.close();
   #endif
+}
+
+void generatePerspective()
+{
+  std::vector<cv::Point> roadPoints;
+  roadPoints.push_back(cv::Point(716,270));
+  roadPoints.push_back(cv::Point(1170,270));
+  roadPoints.push_back(cv::Point(310,860));
+  roadPoints.push_back(cv::Point(1530,860));
 }

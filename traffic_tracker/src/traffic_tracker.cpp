@@ -18,6 +18,10 @@ int main(int arg, char **argv){
     "/darknet_ros/detection_image", 1000, extract_detection_image);
   #endif
 
+  cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
+  cv::moveWindow("Tracker", 0,0);
+  cv::resizeWindow("Tracker", 640, 480);
+
   while(ros::ok()){
     ros::spinOnce();
     loop_rate.sleep();
