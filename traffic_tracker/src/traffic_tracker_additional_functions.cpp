@@ -265,8 +265,6 @@ void beginTracking()
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
 
     #ifdef ENABLE_PERSPECTIVE_FEED
-    std::vector<cv::Point2f> ppCenterPointIn;
-    std::vector<cv::Point2f> ppCenterPointOut;
     ppCenterPointIn.push_back(centerPoint);
     cv::perspectiveTransform(ppCenterPointIn, ppCenterPointOut, ppMatrix);
     cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
@@ -275,6 +273,7 @@ void beginTracking()
     cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
                 cv::FONT_HERSHEY_SIMPLEX,
                 0.75, cv::Scalar(0,0,255),2);
+    ppCenterPointIn.clear();
     #endif
 
     cv::circle(frame, centerPoint, 10, cv::Scalar(255,0,0), 2, 1);

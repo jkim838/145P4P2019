@@ -82,6 +82,8 @@ cv::Mat frame;
 cv::Mat ppImage;
 cv::Mat ppMatrix;
 cv::Size ppImageSize = cv::Size(690, 1220);
+std::vector<cv::Point2f> ppCenterPointIn;
+std::vector<cv::Point2f> ppCenterPointOut;
 #endif
 
 // Tracker Related Global Variables
