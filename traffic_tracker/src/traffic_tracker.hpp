@@ -31,6 +31,7 @@
 /*** Macro Definitions ***/
 #define ENABLE_DEBUG_MODE
 #define ROI_DEBUG_MODE
+#define ENABLE_PERSPECTIVE_FEED
 //#define SUB_RAW_FEED
 
 /*** Function Prototypes ***/
@@ -40,7 +41,7 @@ void extract_count(const std_msgs::Int8::ConstPtr& count_value);
 void initialize_vri();
 void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
 void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image);
-void displayFeed();
+void displayFeed(std::string windowName, cv::Mat imageName);
 void preprocessVehicles();
 void beginTracking();
 void prepareNextFrame();
@@ -77,6 +78,11 @@ struct msg_vehicle{
 
 // OpenCV Related Global Variables
 cv::Mat frame;
+#ifdef ENABLE_PERSPECTIVE_FEED
+cv::Mat ppImage;
+cv::Mat ppMatrix;
+cv::Size ppImageSize = cv::Size(690, 1220);
+#endif
 
 // Tracker Related Global Variables
 int cp_begin_y = 865;

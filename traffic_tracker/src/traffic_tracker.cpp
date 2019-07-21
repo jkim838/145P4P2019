@@ -18,9 +18,12 @@ int main(int arg, char **argv){
     "/darknet_ros/detection_image", 1000, extract_detection_image);
   #endif
 
-  cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
-  cv::moveWindow("Tracker", 0,0);
-  cv::resizeWindow("Tracker", 640, 480);
+  // cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
+  // cv::moveWindow("Tracker", 0,0);
+  // cv::resizeWindow("Tracker", 640, 480);
+  cv::namedWindow("Perspective", CV_WINDOW_NORMAL);
+  cv::moveWindow("Perspective", 0,0);
+  cv::resizeWindow("Perspective", 640, 480);
 
   while(ros::ok()){
     ros::spinOnce();
@@ -37,15 +40,19 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
   #endif
 
   preprocessVehicles();
+  #ifdef ENABLE_PERSPECTIVE_FEED
+  generatePerspective();
+  #endif
   beginTracking();
 
   #ifdef ENABLE_DEBUG_MODE
   debugListVehicle();
   #endif
 
+  // displayFeed("Tracker", frame);
+  displayFeed("Perspective", ppImage);
   prepareNextFrame();
   frame_count++;
-  displayFeed();
 }
 
 void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){

@@ -48,7 +48,7 @@ void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
   }
 }
 
-void displayFeed()
+void displayFeed(std::string windowName, cv::Mat imageName)
 {
   #ifdef ENABLE_DEBUG_MODE
   cv::circle(frame, cv::Point(716,270), 10, cv::Scalar(0,255,0), 2, 1);
@@ -56,7 +56,7 @@ void displayFeed()
   cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,0), 2, 1);
   cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,0), 2, 1);
   #endif
-  cv::imshow("Tracker", frame);
+  cv::imshow(windowName, imageName);
   cv::waitKey(30);
 }
 
@@ -263,6 +263,20 @@ void beginTracking()
 
     //IDEA: COULD WE USE THIS CENTERPOINT (OPENCV) TO USE AS VEHICLE LOCATION AFTER BEING PERSPECTIVE WARPED?
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
+
+    #ifdef ENABLE_PERSPECTIVE_FEED
+    std::vector<cv::Point2f> ppCenterPointIn;
+    std::vector<cv::Point2f> ppCenterPointOut;
+    ppCenterPointIn.push_back(centerPoint);
+    cv::perspectiveTransform(ppCenterPointIn, ppCenterPointOut, ppMatrix);
+    cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
+    std::stringstream toPPString;
+    toPPString << (*currentFrameIt).detectionID;
+    cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
+                cv::FONT_HERSHEY_SIMPLEX,
+                0.75, cv::Scalar(0,0,255),2);
+    #endif
+
     cv::circle(frame, centerPoint, 10, cv::Scalar(255,0,0), 2, 1);
     std::stringstream toString;
     toString << (*currentFrameIt).detectionID;
@@ -329,9 +343,18 @@ void prepareNextFrame()
 
 void generatePerspective()
 {
-  std::vector<cv::Point> roadPoints;
+  #ifdef ENABLE_PERSPECTIVE_FEED
+  std::vector<cv::Point2f> roadPoints; //type must be Point2f
+  std::vector<cv::Point2f> newImagePoints;
   roadPoints.push_back(cv::Point(716,270));
   roadPoints.push_back(cv::Point(1170,270));
   roadPoints.push_back(cv::Point(310,860));
   roadPoints.push_back(cv::Point(1530,860));
+  newImagePoints.push_back(cv::Point(0,0));
+  newImagePoints.push_back(cv::Point(690,0));
+  newImagePoints.push_back(cv::Point(0,1220));
+  newImagePoints.push_back(cv::Point(690,1220));
+  ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
+  cv::warpPerspective(frame, ppImage, ppMatrix, ppImageSize);
+  #endif
 }
