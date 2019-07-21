@@ -46,6 +46,7 @@ void preprocessVehicles();
 void beginTracking();
 void prepareNextFrame();
 void generatePerspective();
+void extractPerspectiveCoord();
 void debugListVehicle();
 void debugListFrame();
 

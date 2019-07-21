@@ -284,6 +284,11 @@ void beginTracking()
   }
 }
 
+void extractPerspectiveCoord()
+{
+    // to be implemented
+}
+
 void debugListFrame()
 {
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
