@@ -350,7 +350,6 @@ void extractPerspectiveCoord()
             if(frame_count % ((*vIt).frameNo.front() + 10) == 0)
             {
               // update TrackedVehicles
-              // TODO: FIX AN ISSUE WHERE COORDINATES AND FRAMES ARE NOT PUSHED BACK PROPERLY
               (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
               (*vIt).frameNo.push_back((*ppIt).frameNo.back());
 
