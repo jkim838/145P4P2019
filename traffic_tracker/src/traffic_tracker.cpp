@@ -18,12 +18,15 @@ int main(int arg, char **argv){
     "/darknet_ros/detection_image", 1000, extract_detection_image);
   #endif
 
-  // cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
-  // cv::moveWindow("Tracker", 0,0);
-  // cv::resizeWindow("Tracker", 640, 480);
-  cv::namedWindow("Perspective", CV_WINDOW_NORMAL);
-  cv::moveWindow("Perspective", 0,0);
-  cv::resizeWindow("Perspective", 640, 480);
+  #ifdef ENABLE_PERSPECTIVE_FEED
+    cv::namedWindow("Perspective", CV_WINDOW_NORMAL);
+    cv::moveWindow("Perspective", 0,0);
+    cv::resizeWindow("Perspective", 640, 480);
+  #else
+    cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
+    cv::moveWindow("Tracker", 0,0);
+    cv::resizeWindow("Tracker", 640, 480);
+  #endif
 
   while(ros::ok()){
     ros::spinOnce();
@@ -44,7 +47,7 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
   generatePerspective();
   #endif
   beginTracking();
-
+  extractPerspectiveCoord();
   #ifdef ENABLE_DEBUG_MODE
   debugListVehicle();
   #endif

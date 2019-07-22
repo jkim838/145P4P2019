@@ -30,25 +30,8 @@
 
 /*** Macro Definitions ***/
 #define ENABLE_DEBUG_MODE
-#define ROI_DEBUG_MODE
 #define ENABLE_PERSPECTIVE_FEED
 //#define SUB_RAW_FEED
-
-/*** Function Prototypes ***/
-void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image);
-void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
-void extract_count(const std_msgs::Int8::ConstPtr& count_value);
-void initialize_vri();
-void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
-void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image);
-void displayFeed(std::string windowName, cv::Mat imageName);
-void preprocessVehicles();
-void beginTracking();
-void prepareNextFrame();
-void generatePerspective();
-void extractPerspectiveCoord();
-void debugListVehicle();
-void debugListFrame();
 
 /*** Struct Definitions ***/
 // define each instance of vehicle in the frame
@@ -77,6 +60,29 @@ struct msg_vehicle{
   std::vector<int> checkpoints; // list of checkpoints passed by vehicle as ROS MSG
 };
 
+struct perspectiveVehicle{
+  int uniqueID;
+  std::string vehicleClass;
+  std::vector<cv::Point2f> centerPoint;
+  std::vector<long int> frameNo;
+};
+
+/*** Function Prototypes ***/
+void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image);
+void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
+void extract_count(const std_msgs::Int8::ConstPtr& count_value);
+void initialize_vri();
+void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
+void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image);
+void displayFeed(std::string windowName, cv::Mat imageName);
+void preprocessVehicles();
+void beginTracking();
+void prepareNextFrame();
+void generatePerspective();
+void extractPerspectiveCoord();
+void debugListVehicle();
+void debugListFrame();
+
 // OpenCV Related Global Variables
 cv::Mat frame;
 #ifdef ENABLE_PERSPECTIVE_FEED
@@ -85,6 +91,7 @@ cv::Mat ppMatrix;
 cv::Size ppImageSize = cv::Size(690, 1220);
 std::vector<cv::Point2f> ppCenterPointIn;
 std::vector<cv::Point2f> ppCenterPointOut;
+std::vector<perspectiveVehicle> ppVehicleFrame;
 #endif
 
 // Tracker Related Global Variables
@@ -95,8 +102,10 @@ std::vector<int> cp_coords_y;
 
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
 std::vector<vehicle> prev_vehicles; // vehicles and their coordinates in previous frame
-std::vector<int> TrackingIDs; // list of IDs of vehicles that are currently being tracked
+std::vector<perspectiveVehicle> TrackedVehicles;
+
 std::vector<tracked_vehicle> TrackingVehicles; // list of vehicles that are currently being tracked
+
 std::vector<msg_vehicle> MsgVehicles; // list of vehicles to be passed down as ROS MSG
 
 // Tracker Related Global Variables

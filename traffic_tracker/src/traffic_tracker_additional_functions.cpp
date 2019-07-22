@@ -265,28 +265,168 @@ void beginTracking()
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
 
     #ifdef ENABLE_PERSPECTIVE_FEED
+    // redefine variables in a suitable form for perspectiveTransform function...
+    // cv::perspectiveTransform(input array, output array, input matrix)
     ppCenterPointIn.push_back(centerPoint);
+    // apply perspective transform...
     cv::perspectiveTransform(ppCenterPointIn, ppCenterPointOut, ppMatrix);
+    // make transformed coordinates and ID global across the program
+    std::vector<cv::Point2f> toPasteCoord;
+    std::vector<long int> toPasteFrame;
+    toPasteCoord.push_back(ppCenterPointOut[0]);
+    toPasteFrame.push_back(frame_count);
+    ppVehicleFrame.push_back({(*currentFrameIt).detectionID,
+                              (*currentFrameIt).vehicleClass,
+                              toPasteCoord,
+                              toPasteFrame});
+    toPasteCoord.clear();
+    toPasteFrame.clear();
+    // Plot green-circle and print uniqueID of the vehicle...
     cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
     std::stringstream toPPString;
     toPPString << (*currentFrameIt).detectionID;
     cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
                 cv::FONT_HERSHEY_SIMPLEX,
                 0.75, cv::Scalar(0,0,255),2);
+    // clear ppCenterPointIn so it only has one element only
     ppCenterPointIn.clear();
     #endif
 
+    // if perspectiveTransform is disabled, plot blue circle on a normal feed
     cv::circle(frame, centerPoint, 10, cv::Scalar(255,0,0), 2, 1);
     std::stringstream toString;
     toString << (*currentFrameIt).detectionID;
     cv::putText(frame, toString.str(), centerPoint, cv::FONT_HERSHEY_SIMPLEX,
                 0.75, cv::Scalar(0,0,255),2);
   }
+
+  #ifdef ENABLE_DEBUG_MODE
+  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/perspective_debugging.csv", std::ofstream::app);
+  export_csv << "==========\n";
+  export_csv << "Frame ID:" << frame_count <<"\n";
+  export_csv << "==========\n";
+  export_csv << "List of vehicles in the frame:\n";
+  for(auto ppIt = ppVehicleFrame.begin(); ppIt != ppVehicleFrame.end(); ++ppIt)
+  {
+    export_csv << "{UniqueID:" << (*ppIt).uniqueID
+               << ", Class:" << (*ppIt).vehicleClass
+               << ", Coordinate:(" << (*ppIt).centerPoint.back().x << ", "
+               << (*ppIt).centerPoint.back().y << "), Frame:"
+               << (*ppIt).frameNo.back()
+               << "}\n";
+  }
+  export_csv.close();
+  #endif
 }
 
 void extractPerspectiveCoord()
 {
     // to be implemented
+    #ifdef ENABLE_DEBUG_MODE
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    export_csv << "==========\n";
+    export_csv << "Frame ID:" << frame_count <<"\n";
+    export_csv << "==========\n";
+    export_csv << "List of vehicles in the frame:\n";
+    export_csv.close();
+    #endif
+
+    for(auto ppIt = ppVehicleFrame.begin(); ppIt != ppVehicleFrame.end(); ++ppIt)
+    {
+      // if the vehicle enters the zone
+      if((*ppIt).centerPoint.back().y <= 1020 && (*ppIt).centerPoint.back().y >= 195)
+      {
+        // check if there is a previous entry to this vehicle
+        // if there is no entry, make one.
+        // if there is an entry, append information to specific entry.
+        bool idMatch = false;
+        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
+        {
+          if((*vIt).uniqueID == (*ppIt).uniqueID)
+          {
+            // ID Match is found... the previous entry exists.
+            idMatch = true;
+            // only append coordinates at every 10th frame..
+            if(frame_count % ((*vIt).frameNo.front() + 10) == 0)
+            {
+              // update TrackedVehicles
+              // TODO: FIX AN ISSUE WHERE COORDINATES AND FRAMES ARE NOT PUSHED BACK PROPERLY
+              (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
+              (*vIt).frameNo.push_back((*ppIt).frameNo.back());
+
+              #ifdef ENABLE_DEBUG_MODE
+              export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              export_csv << "Appending new coordinates for ID:"
+                         << (*ppIt).uniqueID << "at frame:" << frame_count << "\n";
+              export_csv.close();
+              #endif
+            }
+          }
+        }
+        // no idMatch was found after searching through all vehicles...
+        if(!idMatch)
+        {
+          TrackedVehicles.push_back((*ppIt));
+          #ifdef ENABLE_DEBUG_MODE
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+          export_csv << "Tracking initialized for ID:"
+                     << (*ppIt).uniqueID << " at frame:" << frame_count << "\n";
+          export_csv.close();
+          #endif
+        }
+      }
+      else if((*ppIt).centerPoint.back().y < 195)
+      {
+        // vehicle left the zone
+        #ifdef ENABLE_DEBUG_MODE
+        export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+        export_csv << "Tracking ended for ID:"
+                   << (*ppIt).uniqueID << " at frame:" << frame_count << "\n";
+        export_csv.close();
+        #endif
+
+        // DEBUG: publish message
+        // find the vehicle that left the zone and erase from list of tracking
+        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
+        {
+          if((*vIt).uniqueID == (*ppIt).uniqueID)
+          {
+            //TODO: FIX THE ISSUE WHERE THE PROGRAM WILL CRASH IF ENTRY WAS REMOVED
+            //TrackedVehicles.erase(vIt);
+            #ifdef ENABLE_DEBUG_MODE
+            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+            export_csv << "Erasing element ID:"
+                       << (*ppIt).uniqueID << " from the TrackedVehicles\n";
+            export_csv.close();
+            #endif
+          }
+        }
+      }
+    }
+
+    #ifdef ENABLE_DEBUG_MODE
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    export_csv << "==========:\n";
+    export_csv << "TrackedVehicles Final to Frame:" << frame_count << "\n";
+    for(auto it = TrackedVehicles.begin(); it != TrackedVehicles.end(); ++it)
+    {
+      export_csv << "{ID:" << (*it).uniqueID << ", Class:" << (*it).vehicleClass
+                 << ", Coordinates:[";
+      for(auto coordIt = (*it).centerPoint.begin();
+          coordIt != (*it).centerPoint.end(); ++coordIt)
+          {
+              export_csv << "(" << (*coordIt).x << ", " << (*coordIt).y << "),";
+          }
+      export_csv << "], Frames:[";
+      for(auto frameIt = (*it).frameNo.begin(); frameIt != (*it).frameNo.end();
+          ++frameIt)
+          {
+            export_csv << (*frameIt) << ", ";
+          }
+      export_csv << "]}\n";
+    }
+    export_csv.close();
+    #endif
 }
 
 void debugListFrame()
@@ -336,6 +476,7 @@ void prepareNextFrame()
     #endif
   }
   vehicles.clear();
+  ppVehicleFrame.clear();
 
   #ifdef ENABLE_DEBUG_MODE
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
