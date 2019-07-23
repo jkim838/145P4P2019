@@ -386,18 +386,23 @@ void extractPerspectiveCoord()
 
         // DEBUG: publish message
         // find the vehicle that left the zone and erase from list of tracking
-        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
+        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end();)
         {
           if((*vIt).uniqueID == (*ppIt).uniqueID)
           {
             //TODO: FIX THE ISSUE WHERE THE PROGRAM WILL CRASH IF ENTRY WAS REMOVED
-            //TrackedVehicles.erase(vIt);
+            //DEBUG: CRASHPOINT
+            vIt = TrackedVehicles.erase(vIt);
             #ifdef ENABLE_DEBUG_MODE
             export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
             export_csv << "Erasing element ID:"
                        << (*ppIt).uniqueID << " from the TrackedVehicles\n";
             export_csv.close();
             #endif
+          }
+          else
+          {
+            ++vIt;
           }
         }
       }
