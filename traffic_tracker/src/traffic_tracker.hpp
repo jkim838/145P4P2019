@@ -103,6 +103,7 @@ std::vector<int> cp_coords_y;
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
 std::vector<vehicle> prev_vehicles; // vehicles and their coordinates in previous frame
 std::vector<perspectiveVehicle> TrackedVehicles;
+std::vector<int> EndTrackVehicles;
 
 std::vector<tracked_vehicle> TrackingVehicles; // list of vehicles that are currently being tracked
 

@@ -355,6 +355,7 @@ void extractPerspectiveCoord()
 
               #ifdef ENABLE_DEBUG_MODE
               export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              export_csv << "==========\n";
               export_csv << "Appending new coordinates for ID:"
                          << (*ppIt).uniqueID << "at frame:" << frame_count << "\n";
               export_csv.close();
@@ -384,26 +385,62 @@ void extractPerspectiveCoord()
         export_csv.close();
         #endif
 
-        // DEBUG: publish message
-        // find the vehicle that left the zone and erase from list of tracking
-        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end();)
+        bool idMatch = false;
+        for(auto eVIt = EndTrackVehicles.begin(); eVIt != EndTrackVehicles.end(); ++eVIt)
         {
-          if((*vIt).uniqueID == (*ppIt).uniqueID)
+          if((*eVIt) == (*ppIt).uniqueID)
           {
-            //TODO: FIX THE ISSUE WHERE THE PROGRAM WILL CRASH IF ENTRY WAS REMOVED
-            //DEBUG: CRASHPOINT
-            vIt = TrackedVehicles.erase(vIt);
-            #ifdef ENABLE_DEBUG_MODE
-            export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
-            export_csv << "Erasing element ID:"
-                       << (*ppIt).uniqueID << " from the TrackedVehicles\n";
-            export_csv.close();
-            #endif
+            // do nothing when there is a match
+            idMatch = true;
           }
-          else
-          {
-            ++vIt;
-          }
+        }
+        if(!idMatch)
+        {
+          EndTrackVehicles.push_back((*ppIt).uniqueID);
+        }
+      }
+    }
+
+    #ifdef ENABLE_DEBUG_MODE
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    export_csv << "==========\n";
+    export_csv << "List of entries to delete at the end of the frame:\n";
+    for(auto eVIt = EndTrackVehicles.begin(); eVIt != EndTrackVehicles.end(); ++eVIt)
+    {
+      export_csv << "{ID:" << (*eVIt) << "},";
+    }
+    export_csv << "\n";
+    export_csv.close();
+    #endif
+
+    // DEBUG: publish message
+    #ifdef ENABLE_DEBUG_MODE
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    export_csv << "==========\n";
+    export_csv << "Attempting to publish message...\n";
+    export_csv.close();
+    #endif
+    // find the vehicle that left the zone and erase from list of tracking
+    for(auto eVIt = EndTrackVehicles.begin(); eVIt != EndTrackVehicles.end(); ++eVIt)
+    {
+      for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end();)
+      {
+        if((*vIt).uniqueID == (*eVIt))
+        {
+
+          #ifdef ENABLE_DEBUG_MODE
+          export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+          export_csv << "==========\n";
+          export_csv << "Erasing element ID:"
+                     << (*vIt).uniqueID << " from the TrackedVehicles\n";
+          export_csv.close();
+          #endif
+
+          vIt = TrackedVehicles.erase(vIt);
+        }
+        else
+        {
+          ++vIt;
         }
       }
     }
@@ -486,6 +523,14 @@ void prepareNextFrame()
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
   export_csv << "----------\n";
   export_csv << "Wiping current frame vehicles\n";
+  export_csv.close();
+  #endif
+
+  EndTrackVehicles.clear();
+  #ifdef ENABLE_DEBUG_MODE
+  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+  export_csv << "----------\n";
+  export_csv << "Wiping list of vehicles to track in current frame\n";
   export_csv.close();
   #endif
 }
