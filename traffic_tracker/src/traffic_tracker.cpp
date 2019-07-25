@@ -3,7 +3,7 @@
 int main(int arg, char **argv){
   ros::init(arg, argv, "traffic_tracker");
   ros::NodeHandle tt_nh;
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(1000);
 
   image_transport::ImageTransport transport_image(tt_nh);
 
@@ -23,11 +23,12 @@ int main(int arg, char **argv){
   #ifdef ENABLE_PERSPECTIVE_FEED
     cv::namedWindow("Perspective", CV_WINDOW_NORMAL);
     cv::moveWindow("Perspective", 0,0);
-    cv::resizeWindow("Perspective", 640, 480);
-  #else
+    cv::resizeWindow("Perspective", 1280, 720);
+  #endif
+  #ifdef ENABLE_TRACKER_FEED
     cv::namedWindow("Tracker", CV_WINDOW_NORMAL);
     cv::moveWindow("Tracker", 0,0);
-    cv::resizeWindow("Tracker", 640, 480);
+    cv::resizeWindow("Tracker", 1280, 720);
   #endif
   while(ros::ok()){
     ros::spinOnce();
@@ -49,8 +50,12 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
   debugListVehicle();
   #endif
 
-  // displayFeed("Tracker", frame);
+  #ifdef ENABLE_TRACKER_FEED
+  displayFeed("Tracker", frame);
+  #endif
+  #ifdef ENABLE_PERSPECTIVE_FEED
   displayFeed("Perspective", ppImage);
+  #endif
   prepareNextFrame();
   frame_count++;
 }

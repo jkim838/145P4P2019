@@ -32,9 +32,12 @@
 
 
 /*** Macro Definitions ***/
-#define ENABLE_DEBUG_MODE
-#define ENABLE_PERSPECTIVE_FEED
-//#define SUB_RAW_FEED
+//#define ENABLE_DEBUG_MODE
+//#define ENABLE_PERSPECTIVE_FEED
+//#define DRAW_PERSPECTIVE_INFO
+#define ENABLE_TRACKER_FEED
+#define DRAW_TRAKCER_INFO
+#define SUB_RAW_FEED
 
 /*** Struct Definitions ***/
 // define each instance of vehicle in the frame
@@ -72,14 +75,13 @@ void debugListFrame();
 
 // OpenCV Related Global Variables
 cv::Mat frame;
-#ifdef ENABLE_PERSPECTIVE_FEED
 cv::Mat ppImage;
 cv::Mat ppMatrix;
 cv::Size ppImageSize = cv::Size(690, 1220);
 std::vector<cv::Point2f> ppCenterPointIn;
 std::vector<cv::Point2f> ppCenterPointOut;
 std::vector<perspectiveVehicle> ppVehicleFrame;
-#endif
+
 
 // Tracker Related Global Variables
 std::vector<vehicle> vehicles; // vehicles and their coordinates in single frame
@@ -91,6 +93,7 @@ std::vector<int> EndTrackVehicles;
 int maximum_ID = 0;
 int bbox_no = 0;
 long int frame_count = 1; //first frame number
+bool runPerspective = false;
 
 // ROS Related Global variables
 ros::Publisher tt_tracker_pub;

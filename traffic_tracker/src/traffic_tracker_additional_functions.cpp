@@ -264,7 +264,7 @@ void beginTracking()
     //IDEA: COULD WE USE THIS CENTERPOINT (OPENCV) TO USE AS VEHICLE LOCATION AFTER BEING PERSPECTIVE WARPED?
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
 
-    #ifdef ENABLE_PERSPECTIVE_FEED
+
     // redefine variables in a suitable form for perspectiveTransform function...
     // cv::perspectiveTransform(input array, output array, input matrix)
     ppCenterPointIn.push_back(centerPoint);
@@ -281,6 +281,8 @@ void beginTracking()
                               toPasteFrame});
     toPasteCoord.clear();
     toPasteFrame.clear();
+    #ifdef ENABLE_PERSPECTIVE_FEED
+    #ifdef DRAW_PERSPECTIVE_INFO
     // Plot green-circle and print uniqueID of the vehicle...
     cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
     std::stringstream toPPString;
@@ -291,13 +293,19 @@ void beginTracking()
     // clear ppCenterPointIn so it only has one element only
     ppCenterPointIn.clear();
     #endif
+    #endif
 
     // if perspectiveTransform is disabled, plot blue circle on a normal feed
-    cv::circle(frame, centerPoint, 10, cv::Scalar(255,0,0), 2, 1);
+    #ifdef ENABLE_TRACKER_FEED
+    #ifdef DRAW_TRAKCER_INFO
+    cv::circle(frame, centerPoint, 10, cv::Scalar(0,255,0), 2, 1);
     std::stringstream toString;
     toString << (*currentFrameIt).detectionID;
-    cv::putText(frame, toString.str(), centerPoint, cv::FONT_HERSHEY_SIMPLEX,
-                0.75, cv::Scalar(0,0,255),2);
+    cv::putText(frame, "Class:"+(*currentFrameIt).vehicleClass+" ID:"
+                +toString.str(), centerPoint, cv::FONT_HERSHEY_SIMPLEX,
+                1.25, cv::Scalar(0,0,255),2);
+    #endif
+    #endif
   }
 
   #ifdef ENABLE_DEBUG_MODE
@@ -414,8 +422,6 @@ void extractPerspectiveCoord()
     #endif
 
     // DEBUG: publish message
-
-
     for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
     {
       traffic_tracker::perspectiveVehicle toPaste;
@@ -494,6 +500,7 @@ void extractPerspectiveCoord()
     #endif
 }
 
+#ifdef ENABLE_DEBUG_MODE
 void debugListFrame()
 {
   export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
@@ -527,6 +534,7 @@ void debugListVehicle()
   }
   export_csv.close();
 }
+#endif
 
 void prepareNextFrame()
 {
@@ -562,16 +570,22 @@ void prepareNextFrame()
 
 void generatePerspective()
 {
-  std::vector<cv::Point2f> roadPoints; //type must be Point2f
-  std::vector<cv::Point2f> newImagePoints;
-  roadPoints.push_back(cv::Point(716,270));
-  roadPoints.push_back(cv::Point(1170,270));
-  roadPoints.push_back(cv::Point(310,860));
-  roadPoints.push_back(cv::Point(1530,860));
-  newImagePoints.push_back(cv::Point(0,0));
-  newImagePoints.push_back(cv::Point(690,0));
-  newImagePoints.push_back(cv::Point(0,1220));
-  newImagePoints.push_back(cv::Point(690,1220));
-  ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
+  if(!runPerspective)
+  {
+    std::vector<cv::Point2f> roadPoints; //type must be Point2f
+    std::vector<cv::Point2f> newImagePoints;
+    roadPoints.push_back(cv::Point(716,270));
+    roadPoints.push_back(cv::Point(1170,270));
+    roadPoints.push_back(cv::Point(310,860));
+    roadPoints.push_back(cv::Point(1530,860));
+    newImagePoints.push_back(cv::Point(0,0));
+    newImagePoints.push_back(cv::Point(690,0));
+    newImagePoints.push_back(cv::Point(0,1220));
+    newImagePoints.push_back(cv::Point(690,1220));
+    ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
+    runPerspective = true;
+  }
+  #ifdef ENABLE_PERSPECTIVE_FEED
   cv::warpPerspective(frame, ppImage, ppMatrix, ppImageSize);
+  #endif
 }
