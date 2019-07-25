@@ -15,8 +15,8 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
     long int yDimension = (maxY - minY);
     long int xCenter = minX + xDimension/2;
     long int yCenter = minY + yDimension/2;
-    if(vehicleClass=="bicycle"||vehicleClass=="car"||vehicleClass==
-      "motorbike"||vehicleClass=="bus"||vehicleClass=="truck")
+    if(vehicleClass=="car"||vehicleClass=="motorbike"||vehicleClass=="bus"||
+       vehicleClass=="truck")
     {
       vehicle current =
       {
@@ -414,6 +414,28 @@ void extractPerspectiveCoord()
     #endif
 
     // DEBUG: publish message
+
+    traffic_tracker::perspectiveVehicle toPaste;
+    for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
+    {
+      toPaste.uniqueID = (*vIt).uniqueID;
+      toPaste.vehicleClass = (*vIt).vehicleClass;
+      traffic_tracker::point2f toPasteCoord;
+      for(auto vcIt = (*vIt).centerPoint.begin();
+          vcIt != (*vIt).centerPoint.end(); ++vcIt)
+      {
+        toPasteCoord.x = (*vcIt).x;
+        toPasteCoord.y = (*vcIt).y;
+        toPaste.centerPoint.push_back(toPasteCoord);
+      }
+      for(auto vfIt = (*vIt).frameNo.begin(); vfIt != (*vIt).frameNo.end(); ++vfIt)
+      {
+        toPaste.frameNo.push_back((*vfIt));
+      }
+      msg.trackerOutput.push_back(toPaste);
+    }
+    //
+
     #ifdef ENABLE_DEBUG_MODE
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
     export_csv << "==========\n";

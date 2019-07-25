@@ -10,6 +10,8 @@ int main(int arg, char **argv){
   /*** SUBSCRIBER DEFINITIONS ***/
   ros::Subscriber tt_bbox_sub = tt_nh.subscribe("/darknet_ros/bounding_boxes",
   1000, extract_bbox);
+  ros::Publisher tt_tracker_pub = tt_nh.advertise<traffic_tracker::trackerOutput>
+  ("/traffic_tracker/trackerOutput", 1000);
   #ifdef SUB_RAW_FEED
     ros::Subscriber tt_image_sub = tt_nh.subscribe("/videofile/image_raw",1000,
     extract_detection_image);
@@ -31,6 +33,7 @@ int main(int arg, char **argv){
   while(ros::ok()){
     ros::spinOnce();
     loop_rate.sleep();
+    tt_tracker_pub.publish(msg);
   }
   frame.release();
 }
