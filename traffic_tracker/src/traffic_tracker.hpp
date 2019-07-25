@@ -92,6 +92,8 @@ int maximum_ID = 0;
 int bbox_no = 0;
 long int frame_count = 1; //first frame number
 
+// ROS Related Global variables
+ros::Publisher tt_tracker_pub;
 #ifdef ENABLE_DEBUG_MODE
   std::ofstream export_csv;
 #endif

@@ -415,9 +415,10 @@ void extractPerspectiveCoord()
 
     // DEBUG: publish message
 
-    traffic_tracker::perspectiveVehicle toPaste;
+
     for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
     {
+      traffic_tracker::perspectiveVehicle toPaste;
       toPaste.uniqueID = (*vIt).uniqueID;
       toPaste.vehicleClass = (*vIt).vehicleClass;
       traffic_tracker::point2f toPasteCoord;
@@ -434,7 +435,8 @@ void extractPerspectiveCoord()
       }
       msg.trackerOutput.push_back(toPaste);
     }
-    //
+    tt_tracker_pub.publish(msg);
+    msg.trackerOutput.clear();
 
     #ifdef ENABLE_DEBUG_MODE
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
@@ -555,11 +557,11 @@ void prepareNextFrame()
   export_csv << "Wiping list of vehicles to track in current frame\n";
   export_csv.close();
   #endif
+
 }
 
 void generatePerspective()
 {
-  #ifdef ENABLE_PERSPECTIVE_FEED
   std::vector<cv::Point2f> roadPoints; //type must be Point2f
   std::vector<cv::Point2f> newImagePoints;
   roadPoints.push_back(cv::Point(716,270));
@@ -572,5 +574,4 @@ void generatePerspective()
   newImagePoints.push_back(cv::Point(690,1220));
   ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
   cv::warpPerspective(frame, ppImage, ppMatrix, ppImageSize);
-  #endif
 }
