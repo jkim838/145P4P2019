@@ -305,8 +305,7 @@ void beginTracking()
     cv::circle(frame, centerPoint, 10, cv::Scalar(0,255,0), 2, 1);
     std::stringstream toString;
     toString << (*currentFrameIt).detectionID;
-    cv::putText(frame, "Class:"+(*currentFrameIt).vehicleClass+" ID:"
-                +toString.str(), centerPoint, cv::FONT_HERSHEY_SIMPLEX,
+    cv::putText(frame, toString.str(), centerPoint, cv::FONT_HERSHEY_SIMPLEX,
                 1.25, cv::Scalar(0,0,255),2);
     #endif
     #endif
