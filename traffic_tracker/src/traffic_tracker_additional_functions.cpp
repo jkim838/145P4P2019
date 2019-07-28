@@ -291,14 +291,17 @@ void beginTracking()
     cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
                 cv::FONT_HERSHEY_SIMPLEX,
                 0.75, cv::Scalar(0,0,255),2);
+    #endif
+    #endif
+
+    #ifdef ENABLE_PERSPECTIVE_TRACKING
     // clear ppCenterPointIn so it only has one element only
     ppCenterPointIn.clear();
-    #endif
     #endif
 
     // if perspectiveTransform is disabled, plot blue circle on a normal feed
     #ifdef ENABLE_TRACKER_FEED
-    #ifdef DRAW_TRAKCER_INFO
+    #ifdef DRAW_TRACKER_INFO
     cv::circle(frame, centerPoint, 10, cv::Scalar(0,255,0), 2, 1);
     std::stringstream toString;
     toString << (*currentFrameIt).detectionID;
@@ -588,7 +591,7 @@ void generatePerspective()
     ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
     runPerspective = true;
   }
-  #ifdef ENABLE_PERSPECTIVE_FEED
+  #ifdef ENABLE_PERSPECTIVE_TRACKING
   cv::warpPerspective(frame, ppImage, ppMatrix, ppImageSize);
   #endif
 }
