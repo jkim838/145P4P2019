@@ -13,11 +13,11 @@ int main(int arg, char **argv){
   tt_tracker_pub = tt_nh.advertise<traffic_tracker::trackerOutput>
   ("/traffic_tracker/trackerOutput", 1000);
   #ifdef SUB_RAW_FEED
-    ros::Subscriber tt_image_sub = tt_nh.subscribe("/videofile/image_raw",1000,
+    ros::Subscriber tt_image_sub = tt_nh.subscribe("/videofile/image_raw",1,
     extract_detection_image);
   #else
     ros::Subscriber tt_image_sub = tt_nh.subscribe(
-    "/darknet_ros/detection_image", 1000, extract_detection_image);
+    "/darknet_ros/detection_image", 1, extract_detection_image);
   #endif
 
   #ifdef ENABLE_PERSPECTIVE_FEED
@@ -39,27 +39,45 @@ int main(int arg, char **argv){
 
 void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image){
   getFrameFromSource(detection_image);
+
   #ifdef ENABLE_DEBUG_MODE
   debugListFrame();
   #endif
-  preprocessVehicles();
-  generatePerspective();
-  beginTracking();
-  extractPerspectiveCoord();
-  #ifdef ENABLE_DEBUG_MODE
-  debugListVehicle();
+
+  #ifdef ENABLE_MOTION_TRACKING
+    preprocessVehicles();
+
+    #ifdef ENABLE_PERSPECTIVE_TRACKING
+    generatePerspective();
+    #endif
+
+    beginTracking();
+
+    #ifdef ENABLE_PERSPECTIVE_TRACKING
+    extractPerspectiveCoord();
+    #endif
+
+    #ifdef ENABLE_DEBUG_MODE
+    debugListVehicle();
+    #endif
   #endif
 
   #ifdef ENABLE_TRACKER_FEED
   displayFeed("Tracker", frame);
   #endif
-  #ifdef ENABLE_PERSPECTIVE_FEED
-  displayFeed("Perspective", ppImage);
+
+  #ifdef ENABLE_MOTION_TRACKING
+    #ifdef ENABLE_PERSPECTIVE_FEED
+    displayFeed("Perspective", ppImage);
+    #endif
+
+    prepareNextFrame();
   #endif
-  prepareNextFrame();
   frame_count++;
 }
 
 void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){
+  #ifdef ENABLE_MOTION_TRACKING
   getBBOXinfo(bbox);
+  #endif
 }

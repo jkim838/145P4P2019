@@ -33,11 +33,13 @@
 
 /*** Macro Definitions ***/
 //#define ENABLE_DEBUG_MODE
+#define ENABLE_MOTION_TRACKING
+#define ENABLE_PERSPECTIVE_TRACKING
 //#define ENABLE_PERSPECTIVE_FEED
 //#define DRAW_PERSPECTIVE_INFO
 #define ENABLE_TRACKER_FEED
 #define DRAW_TRAKCER_INFO
-#define SUB_RAW_FEED
+//#define SUB_RAW_FEED
 
 /*** Struct Definitions ***/
 // define each instance of vehicle in the frame

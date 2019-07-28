@@ -1,5 +1,33 @@
 #include "traffic_tracker.hpp"
 
+void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
+{
+  try
+  {
+    cv_bridge::CvImageConstPtr take_cv;
+    take_cv = cv_bridge::toCvCopy(detection_image);
+    frame = take_cv->image;
+  }
+  catch(cv_bridge::Exception& e)
+  {
+    ROS_ERROR("Error: cannot convert message to image",
+    detection_image->encoding.c_str());
+  }
+}
+
+void displayFeed(std::string windowName, cv::Mat imageName)
+{
+  #ifdef ENABLE_DEBUG_MODE
+  cv::circle(frame, cv::Point(716,270), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1170,270), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,0), 2, 1);
+  #endif
+  cv::imshow(windowName, imageName);
+  cv::waitKey(30);
+}
+
+#ifdef ENABLE_MOTION_TRACKING
 void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
 {
   long int vehicleID = 0;
@@ -31,33 +59,6 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
       vehicleID++;
     }
   }
-}
-
-void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
-{
-  try
-  {
-    cv_bridge::CvImageConstPtr take_cv;
-    take_cv = cv_bridge::toCvCopy(detection_image);
-    frame = take_cv->image;
-  }
-  catch(cv_bridge::Exception& e)
-  {
-    ROS_ERROR("Error: cannot convert message to image",
-    detection_image->encoding.c_str());
-  }
-}
-
-void displayFeed(std::string windowName, cv::Mat imageName)
-{
-  #ifdef ENABLE_DEBUG_MODE
-  cv::circle(frame, cv::Point(716,270), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1170,270), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,0), 2, 1);
-  #endif
-  cv::imshow(windowName, imageName);
-  cv::waitKey(30);
 }
 
 void preprocessVehicles()
@@ -263,8 +264,7 @@ void beginTracking()
 
     //IDEA: COULD WE USE THIS CENTERPOINT (OPENCV) TO USE AS VEHICLE LOCATION AFTER BEING PERSPECTIVE WARPED?
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
-
-
+    #ifdef ENABLE_PERSPECTIVE_TRACKING
     // redefine variables in a suitable form for perspectiveTransform function...
     // cv::perspectiveTransform(input array, output array, input matrix)
     ppCenterPointIn.push_back(centerPoint);
@@ -281,6 +281,7 @@ void beginTracking()
                               toPasteFrame});
     toPasteCoord.clear();
     toPasteFrame.clear();
+    #endif
     #ifdef ENABLE_PERSPECTIVE_FEED
     #ifdef DRAW_PERSPECTIVE_INFO
     // Plot green-circle and print uniqueID of the vehicle...
@@ -327,6 +328,7 @@ void beginTracking()
   #endif
 }
 
+#ifdef ENABLE_PERSPECTIVE_TRACKING
 void extractPerspectiveCoord()
 {
     // to be implemented
@@ -499,6 +501,7 @@ void extractPerspectiveCoord()
     export_csv.close();
     #endif
 }
+#endif
 
 #ifdef ENABLE_DEBUG_MODE
 void debugListFrame()
@@ -589,3 +592,5 @@ void generatePerspective()
   cv::warpPerspective(frame, ppImage, ppMatrix, ppImageSize);
   #endif
 }
+
+#endif
