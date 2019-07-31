@@ -17,6 +17,9 @@
 #include <ctime>
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <darknet_ros_msgs/BoundingBox.h>
+#include <traffic_tracker/trackerOutput.h>
+#include <traffic_tracker/point2f.h>
+#include <traffic_tracker/perspectiveVehicle.h>
 
 int vehicle_count_integer;
 int detection_id = 1;
@@ -27,6 +30,7 @@ sig_atomic_t volatile g_request_shutdown = 0;
 char getch();
 void count_object_no(const std_msgs::Int8::ConstPtr& count_value);
 void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox);
+void analyze_trackerOutput(const traffic_tracker::perspectiveVehicle::ConstPtr& trackerOutput);
 void SIGNALHandler(int sig);
 void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
 
@@ -50,6 +54,7 @@ int main(int argc, char **argv){
   // Subscriber Declaration
   ros::Subscriber ta_frame_vehicle_count_sub = ta_nh.subscribe("/darknet_ros/found_object", 1000, count_object_no);
   ros::Subscriber ta_bounding_box_sub = ta_nh.subscribe("/darknet_ros/bounding_boxes", 1000, extract_bounding_box);
+  ros::Subscriber ta_trackerOutput_sub = ta_nh.subscribe("/traffic_tracker/trackerOutput", 1000, analyze_trackerOutput);
 
   // Publisher Declaration
   // ros::Publisher ta_pub = ta_nh.advertise<std_msgs::Uint64>("/TopicName", 10)
@@ -200,4 +205,8 @@ void extract_bounding_box(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
     export_csv.close();
   }
   detection_id++;
+}
+
+void analyze_trackerOutput(const traffic_tracker::perspectiveVehicle::ConstPtr& trackerOutput){
+  
 }

@@ -49,6 +49,9 @@
     <param name="config_path"           value="$(arg yolo_config_path)" />
   </node>
 
+  <node pkg="traffic_tracker" type="traffic_tracker_node" name="traffic_tracker_node" output="screen">
+  </node>
+
   <node pkg="traffic_analyze" type="traffic_analyze_node" name="traffic_analyze_node" output="screen">
   </node>
 
