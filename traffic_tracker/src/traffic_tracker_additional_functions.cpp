@@ -1,5 +1,6 @@
 #include "traffic_tracker.hpp"
 
+/*** Convert the ROS message into an OpenCV matrix ***/
 void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
 {
   try
@@ -15,6 +16,9 @@ void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
   }
 }
 
+/***
+Displays the video feed of whichever mode is enabled
+***/
 void displayFeed(std::string windowName, cv::Mat imageName)
 {
   #ifdef ENABLE_DEBUG_MODE
@@ -27,6 +31,10 @@ void displayFeed(std::string windowName, cv::Mat imageName)
   cv::waitKey(30);
 }
 
+/***
+Called every time a ROS message is published to copy the YOLO bounding box 
+information into a vehicle structure that is a more usable form 
+***/
 #ifdef ENABLE_MOTION_TRACKING
 void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
 {
@@ -61,6 +69,7 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
   }
 }
 
+/*** Forces the IDs of the vehicles in the current frame to be in the order they were detected ***/
 void preprocessVehicles()
 {
   bool warnVehicleEmpty = false;
@@ -123,6 +132,10 @@ void preprocessVehicles()
   #endif
 }
 
+/*** 
+Track vehicles using a combination of IOU correlation and euclidean distance.
+Works on the assumption that between frames there is sufficient bounding box overlap 
+***/
 void beginTracking()
 {
   for(auto currentFrameIt = vehicles.begin();
@@ -262,7 +275,6 @@ void beginTracking()
       #endif
     }
 
-    //IDEA: COULD WE USE THIS CENTERPOINT (OPENCV) TO USE AS VEHICLE LOCATION AFTER BEING PERSPECTIVE WARPED?
     cv::Point centerPoint = cv::Point((*currentFrameIt).x, (*currentFrameIt).y);
     #ifdef ENABLE_PERSPECTIVE_TRACKING
     // redefine variables in a suitable form for perspectiveTransform function...
@@ -330,6 +342,7 @@ void beginTracking()
   #endif
 }
 
+/*** Receives the perspective transform coordinates then extracts the data out of it ***/
 #ifdef ENABLE_PERSPECTIVE_TRACKING
 void extractPerspectiveCoord()
 {
@@ -425,7 +438,7 @@ void extractPerspectiveCoord()
     export_csv.close();
     #endif
 
-    // DEBUG: publish message
+    // Publish the trackerOutput message
     for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
     {
       traffic_tracker::perspectiveVehicle toPaste;
@@ -448,6 +461,7 @@ void extractPerspectiveCoord()
     tt_tracker_pub.publish(msg);
     msg.trackerOutput.clear();
 
+	
     #ifdef ENABLE_DEBUG_MODE
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
     export_csv << "==========\n";
@@ -541,6 +555,10 @@ void debugListVehicle()
 }
 #endif
 
+/*** 
+Pass the information on current vehicles to the previous vehicles vector in preparation for processing the 
+next frame 
+***/
 void prepareNextFrame()
 {
   if(vehicles.size()!=0)
@@ -573,6 +591,11 @@ void prepareNextFrame()
 
 }
 
+/*** 
+Generate a transform matrix. This matrix is an intermediary step. 
+This matrix is applied to the center coordinates to generate a set
+of transformed vehicle center coordinates 
+***/
 void generatePerspective()
 {
   if(!runPerspective)
