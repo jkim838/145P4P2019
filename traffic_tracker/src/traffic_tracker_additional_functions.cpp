@@ -32,8 +32,8 @@ void displayFeed(std::string windowName, cv::Mat imageName)
 }
 
 /***
-Called every time a ROS message is published to copy the YOLO bounding box 
-information into a vehicle structure that is a more usable form 
+Called every time a ROS message is published to copy the YOLO bounding box
+information into a vehicle structure that is a more usable form
 ***/
 #ifdef ENABLE_MOTION_TRACKING
 void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
@@ -132,9 +132,9 @@ void preprocessVehicles()
   #endif
 }
 
-/*** 
+/***
 Track vehicles using a combination of IOU correlation and euclidean distance.
-Works on the assumption that between frames there is sufficient bounding box overlap 
+Works on the assumption that between frames there is sufficient bounding box overlap
 ***/
 void beginTracking()
 {
@@ -359,7 +359,7 @@ void extractPerspectiveCoord()
     for(auto ppIt = ppVehicleFrame.begin(); ppIt != ppVehicleFrame.end(); ++ppIt)
     {
       // if the vehicle enters the zone
-      if((*ppIt).centerPoint.back().y <= 1020 && (*ppIt).centerPoint.back().y >= 195)
+      if(195<=(*ppIt).centerPoint.back().y&&(*ppIt).centerPoint.back().y <= 1020)
       {
         // check if there is a previous entry to this vehicle
         // if there is no entry, make one.
@@ -367,12 +367,12 @@ void extractPerspectiveCoord()
         bool idMatch = false;
         for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
         {
-          if((*vIt).uniqueID == (*ppIt).uniqueID)
+          if((*vIt).uniqueID == (*ppIt).uniqueID )
           {
             // ID Match is found... the previous entry exists.
             idMatch = true;
-            // only append coordinates at every 10th frame..
-            if(frame_count % ((*vIt).frameNo.front() + 10) == 0)
+            // only append coordinates at every frame..
+            if((*vIt).frameNo.back() != frame_count)
             {
               // update TrackedVehicles
               (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
@@ -382,7 +382,7 @@ void extractPerspectiveCoord()
               export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
               export_csv << "==========\n";
               export_csv << "Appending new coordinates for ID:"
-                         << (*ppIt).uniqueID << "at frame:" << frame_count << "\n";
+                         << (*ppIt).uniqueID << " at frame:" << frame_count << "\n";
               export_csv.close();
               #endif
             }
@@ -409,6 +409,29 @@ void extractPerspectiveCoord()
                    << (*ppIt).uniqueID << " at frame:" << frame_count << "\n";
         export_csv.close();
         #endif
+
+        for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
+        {
+          if((*vIt).uniqueID == (*ppIt).uniqueID)
+          {
+            // ID Match is found... the previous entry exists.
+            // only append coordinates at every frame..
+            if((*vIt).frameNo.back() != frame_count)
+            {
+              // update TrackedVehicles
+              (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
+              (*vIt).frameNo.push_back((*ppIt).frameNo.back());
+
+              #ifdef ENABLE_DEBUG_MODE
+              export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+              export_csv << "==========\n";
+              export_csv << "Appending last coordinates for ID:"
+                         << (*ppIt).uniqueID << " at frame:" << frame_count << "\n";
+              export_csv.close();
+              #endif
+            }
+          }
+        }
 
         bool idMatch = false;
         for(auto eVIt = EndTrackVehicles.begin(); eVIt != EndTrackVehicles.end(); ++eVIt)
@@ -438,6 +461,47 @@ void extractPerspectiveCoord()
     export_csv.close();
     #endif
 
+    #ifdef ENABLE_DEBUG_MODE
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
+    export_csv << "==========:\n";
+    export_csv << "TrackedVehicles Final to Frame:" << frame_count << "\n";
+    for(auto it = TrackedVehicles.begin(); it != TrackedVehicles.end(); ++it)
+    {
+      export_csv << "{ID:" << (*it).uniqueID << ", Class:" << (*it).vehicleClass
+                 << ", Coordinates:[";
+      for(auto coordIt = (*it).centerPoint.begin();
+          coordIt != (*it).centerPoint.end(); ++coordIt)
+          {
+              export_csv << "(" << (*coordIt).x << ", " << (*coordIt).y << "),";
+          }
+      export_csv << "], Frames:[";
+      for(auto frameIt = (*it).frameNo.begin(); frameIt != (*it).frameNo.end();
+          ++frameIt)
+          {
+            export_csv << (*frameIt) << ", ";
+          }
+      //DEBUG: FRAME DIFFERENCE IS RETURNED AS ZERO AT ALL TIMES
+      float yFront = (float)((*it).centerPoint.front().y);
+      float yBack = (float)((*it).centerPoint.back().y);
+      float yPxDiff = yFront-yBack;
+      float meterPerPixel = 40/825;
+      float frameBack = (float)((*it).frameNo.back());
+      float frameFront = (float)((*it).frameNo.front());
+      float frameDiff = frameBack - frameFront;
+      float frameTime = frameDiff/30;
+      float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
+      export_csv << "], yFront:" << yFront
+                 << ", yBack:" << yBack
+                 << ", yPxDiff:"<< yPxDiff
+                 << ", frameBack:" << frameBack
+                 << ", frameFront:" << frameFront
+                 << ", frameDiff:" << (float)frameDiff
+                 << ", frameTime:" << (float)frameTime
+                 << ", yVelocity:"<< (float)yvelocity <<"}\n";
+    }
+    export_csv.close();
+    #endif
+
     // Publish the trackerOutput message
     for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end(); ++vIt)
     {
@@ -461,7 +525,7 @@ void extractPerspectiveCoord()
     tt_tracker_pub.publish(msg);
     msg.trackerOutput.clear();
 
-	
+
     #ifdef ENABLE_DEBUG_MODE
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
     export_csv << "==========\n";
@@ -473,7 +537,8 @@ void extractPerspectiveCoord()
     {
       for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end();)
       {
-        if((*vIt).uniqueID == (*eVIt))
+        if((*vIt).uniqueID == (*eVIt) ||
+           (*vIt).frameNo.back() < frame_count - 150) // delete entry if not terminated within 5 seconds
         {
 
           #ifdef ENABLE_DEBUG_MODE
@@ -481,6 +546,10 @@ void extractPerspectiveCoord()
           export_csv << "==========\n";
           export_csv << "Erasing element ID:"
                      << (*vIt).uniqueID << " from the TrackedVehicles\n";
+          if((*vIt).frameNo.back() < frame_count - 150)
+          {
+            export_csv << "Reason: inactivity\n";
+          }
           export_csv.close();
           #endif
 
@@ -512,7 +581,24 @@ void extractPerspectiveCoord()
           {
             export_csv << (*frameIt) << ", ";
           }
-      export_csv << "]}\n";
+      //DEBUG: FRAME DIFFERENCE IS RETURNED AS ZERO AT ALL TIMES
+      long int yFront = (*it).centerPoint.front().y;
+      long int yBack = (*it).centerPoint.back().y;
+      long int yPxDiff = yFront-yBack;
+      float meterPerPixel = 40/825;
+      long int frameBack = ((*it).frameNo.back());
+      long int frameFront = ((*it).frameNo.front());
+      long int frameDiff = frameBack - frameFront;
+      float frameTime = (frameBack-frameFront)/30;
+      float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
+      export_csv << "], yFront:" << yFront
+                 << ", yBack:" << yBack
+                 << ", yPxDiff:"<< yPxDiff
+                 << ", frameBack:" << frameBack
+                 << ", frameFront:" << frameFront
+                 << ", frameDiff:" << frameDiff
+                 << ", frameTime:" << frameTime
+                 << ", yVelocity:"<< yvelocity <<"}\n";
     }
     export_csv.close();
     #endif
@@ -555,9 +641,9 @@ void debugListVehicle()
 }
 #endif
 
-/*** 
-Pass the information on current vehicles to the previous vehicles vector in preparation for processing the 
-next frame 
+/***
+Pass the information on current vehicles to the previous vehicles vector in preparation for processing the
+next frame
 ***/
 void prepareNextFrame()
 {
@@ -591,10 +677,10 @@ void prepareNextFrame()
 
 }
 
-/*** 
-Generate a transform matrix. This matrix is an intermediary step. 
+/***
+Generate a transform matrix. This matrix is an intermediary step.
 This matrix is applied to the center coordinates to generate a set
-of transformed vehicle center coordinates 
+of transformed vehicle center coordinates
 ***/
 void generatePerspective()
 {

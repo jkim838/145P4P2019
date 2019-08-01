@@ -23,7 +23,7 @@
         <!-- flip the image vertically -->
         <arg name="flip_vertical" value="false" />
         <!-- enable looping playback -->
-        <arg name="loop_videofile" value="true" />
+        <arg name="loop_videofile" value="false" />
         <!-- visualize on an image_view window the stream generated -->
         <arg name="visualize" value="false" />
    </include>

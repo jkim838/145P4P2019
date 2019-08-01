@@ -13,11 +13,11 @@ int main(int arg, char **argv){
   tt_tracker_pub = tt_nh.advertise<traffic_tracker::trackerOutput>
   ("/traffic_tracker/trackerOutput", 1000);
   #ifdef SUB_RAW_FEED
-    ros::Subscriber tt_image_sub = tt_nh.subscribe("/videofile/image_raw",1,
+    ros::Subscriber tt_image_sub = tt_nh.subscribe("/videofile/image_raw",50,
     extract_detection_image);
   #else
     ros::Subscriber tt_image_sub = tt_nh.subscribe(
-    "/darknet_ros/detection_image", 1, extract_detection_image);
+    "/darknet_ros/detection_image", 50, extract_detection_image);
   #endif
 
   #ifdef ENABLE_PERSPECTIVE_FEED
@@ -33,6 +33,7 @@ int main(int arg, char **argv){
   while(ros::ok()){
     ros::spinOnce();
     loop_rate.sleep();
+    frame_count++;
   }
   frame.release();
 }
@@ -73,7 +74,6 @@ void extract_detection_image(const sensor_msgs::Image::ConstPtr& detection_image
 
     prepareNextFrame();
   #endif
-  frame_count++;
 }
 
 void extract_bbox(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox){
