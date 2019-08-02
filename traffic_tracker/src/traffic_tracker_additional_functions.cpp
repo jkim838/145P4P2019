@@ -283,6 +283,7 @@ void beginTracking()
     ppCenterPointIn.push_back(centerPoint);
     // apply perspective transform...
     cv::perspectiveTransform(ppCenterPointIn, ppCenterPointOut, ppMatrix);
+    // only append vehicles with positive coordinates after perspective transform...
     if(ppCenterPointOut[0].x >= 0 && ppCenterPointOut[0].y >= 0)
     {
       // make transformed coordinates and ID global across the program
@@ -506,14 +507,7 @@ void extractPerspectiveCoord()
       float frameDiff = frameBack - frameFront;
       float frameTime = frameDiff/30;
       float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
-      export_csv << "], yFront:" << yFront
-                 << ", yBack:" << yBack
-                 << ", yPxDiff:"<< yPxDiff
-                 << ", frameBack:" << frameBack
-                 << ", frameFront:" << frameFront
-                 << ", frameDiff:" << (float)frameDiff
-                 << ", frameTime:" << (float)frameTime
-                 << ", yVelocity:"<< (float)yvelocity <<"}\n";
+      export_csv << "]}\n";
     }
     export_csv.close();
     #endif
@@ -597,24 +591,16 @@ void extractPerspectiveCoord()
           {
             export_csv << (*frameIt) << ", ";
           }
-      //DEBUG: FRAME DIFFERENCE IS RETURNED AS ZERO AT ALL TIMES
       long int yFront = (*it).centerPoint.front().y;
       long int yBack = (*it).centerPoint.back().y;
       long int yPxDiff = yFront-yBack;
-      float meterPerPixel = 40/825;
+      float meterPerPixel = (float)40/(float)825;
       long int frameBack = ((*it).frameNo.back());
       long int frameFront = ((*it).frameNo.front());
       long int frameDiff = frameBack - frameFront;
-      float frameTime = (frameBack-frameFront)/30;
+      float frameTime = (frameBack-frameFront)/(float)30;
       float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
-      export_csv << "], yFront:" << yFront
-                 << ", yBack:" << yBack
-                 << ", yPxDiff:"<< yPxDiff
-                 << ", frameBack:" << frameBack
-                 << ", frameFront:" << frameFront
-                 << ", frameDiff:" << frameDiff
-                 << ", frameTime:" << frameTime
-                 << ", yVelocity:"<< yvelocity <<"}\n";
+      export_csv << "], y-velocity:"<< yvelocity <<"}\n";
     }
     export_csv.close();
     #endif
