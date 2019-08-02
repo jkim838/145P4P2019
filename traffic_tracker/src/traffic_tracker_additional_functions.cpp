@@ -5,6 +5,7 @@ void getFrameFromSource(const sensor_msgs::Image::ConstPtr& detection_image)
 {
   try
   {
+    startFrameCount = true;
     cv_bridge::CvImageConstPtr take_cv;
     take_cv = cv_bridge::toCvCopy(detection_image);
     frame = take_cv->image;

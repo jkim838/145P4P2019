@@ -17,7 +17,7 @@ int main(int arg, char **argv){
     extract_detection_image);
   #else
     ros::Subscriber tt_image_sub = tt_nh.subscribe(
-    "/darknet_ros/detection_image", 50, extract_detection_image);
+    "/darknet_ros/detection_image", 1, extract_detection_image);
   #endif
 
   #ifdef ENABLE_PERSPECTIVE_FEED
@@ -33,7 +33,12 @@ int main(int arg, char **argv){
   while(ros::ok()){
     ros::spinOnce();
     loop_rate.sleep();
-    frame_count++;
+    if(startFrameCount){
+      export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/frame_debugging.csv", std::ofstream::app);
+      export_csv << "frame:" << frame_count << "\n";
+      export_csv.close();
+      frame_count++;
+    }
   }
   frame.release();
 }

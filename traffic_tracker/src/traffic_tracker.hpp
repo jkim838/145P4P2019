@@ -104,3 +104,4 @@ ros::Publisher tt_tracker_pub;
 #endif
 // ROS related global Variables
 traffic_tracker::trackerOutput msg;
+bool startFrameCount = false;
