@@ -283,17 +283,32 @@ void beginTracking()
     ppCenterPointIn.push_back(centerPoint);
     // apply perspective transform...
     cv::perspectiveTransform(ppCenterPointIn, ppCenterPointOut, ppMatrix);
-    // make transformed coordinates and ID global across the program
-    std::vector<cv::Point2f> toPasteCoord;
-    std::vector<long int> toPasteFrame;
-    toPasteCoord.push_back(ppCenterPointOut[0]);
-    toPasteFrame.push_back(frame_count);
-    ppVehicleFrame.push_back({(*currentFrameIt).detectionID,
-                              (*currentFrameIt).vehicleClass,
-                              toPasteCoord,
-                              toPasteFrame});
-    toPasteCoord.clear();
-    toPasteFrame.clear();
+    if(ppCenterPointOut[0].x >= 0 && ppCenterPointOut[0].y >= 0)
+    {
+      // make transformed coordinates and ID global across the program
+      std::vector<cv::Point2f> toPasteCoord;
+      std::vector<long int> toPasteFrame;
+      toPasteCoord.push_back(ppCenterPointOut[0]);
+      toPasteFrame.push_back(frame_count);
+      //check if previous entry to ppVehicleFrame exist...
+      bool ppvIDMatch = false;
+      for(auto ppvIt = ppVehicleFrame.begin(); ppvIt != ppVehicleFrame.end(); ++ppvIt)
+      {
+        if((*ppvIt).uniqueID == (*currentFrameIt).detectionID)
+        {
+          ppvIDMatch = true;
+        }
+      }
+      if(!ppvIDMatch)
+      {
+        ppVehicleFrame.push_back({(*currentFrameIt).detectionID,
+                                  (*currentFrameIt).vehicleClass,
+                                  toPasteCoord,
+                                  toPasteFrame});
+      }
+      toPasteCoord.clear();
+      toPasteFrame.clear();
+    }
     #endif
     #ifdef ENABLE_PERSPECTIVE_FEED
     #ifdef DRAW_PERSPECTIVE_INFO
