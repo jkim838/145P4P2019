@@ -409,6 +409,7 @@ void extractPerspectiveCoord()
         if(!idMatch)
         {
           TrackedVehicles.push_back((*ppIt));
+          vehicleCount++;
           #ifdef ENABLE_DEBUG_MODE
           export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
           export_csv << "Tracking initialized for ID:"
@@ -531,6 +532,8 @@ void extractPerspectiveCoord()
         toPaste.frameNo.push_back((*vfIt));
       }
       msg.trackerOutput.push_back(toPaste);
+      msg.frameCount = frame_count;
+      msg.vehicleCount = vehicleCount;
     }
     tt_tracker_pub.publish(msg);
     msg.trackerOutput.clear();

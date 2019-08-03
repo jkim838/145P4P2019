@@ -1,6 +1,7 @@
 /*** ROS ***/
 #include <ros/ros.h>
 #include <std_msgs/Int8.h>
+#include <std_msgs/Int64.h>
 #include <sensor_msgs/Image.h>
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <darknet_ros_msgs/BoundingBox.h>
@@ -96,6 +97,7 @@ int maximum_ID = 0;
 int bbox_no = 0;
 long int frame_count = 1; //first frame number
 bool runPerspective = false;
+long int vehicleCount = 0;
 
 // ROS Related Global variables
 ros::Publisher tt_tracker_pub;
