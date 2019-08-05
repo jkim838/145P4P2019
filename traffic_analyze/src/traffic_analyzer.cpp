@@ -25,7 +25,9 @@
 std::ofstream export_csv;
 // Signal-safe flag for whether shutdown is requested
 sig_atomic_t volatile g_request_shutdown = 0;
-
+int message_count = 0;
+unsigned long prev_message_time;
+unsigned long current_message_time;
 /*** Function Prototypes ***/
 char getch();
 void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& trackerOutput);
@@ -62,7 +64,6 @@ int main(int argc, char **argv)
   {
     ros::spinOnce();
     int keystroke = getch();
-
     if(keystroke == 's')
     {
      ROS_INFO("SAVING DATA...");
@@ -154,44 +155,59 @@ char getch()
 
 void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& trackerOutput)
 {
-  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",
-                  std::ofstream::app);
-  export_csv << "FRAME:" << trackerOutput->frameCount << "\n"
-             << "Vehicles in Frame:" << trackerOutput->trackerOutput.size() <<"\n"
-             << "Total Vehicle Count:" << trackerOutput->vehicleCount<< "\n";
-  for(auto toIt = trackerOutput->trackerOutput.begin();
-      toIt != trackerOutput->trackerOutput.end(); ++toIt)
+  if(message_count == 0)
   {
-    float yFront = (float)((*toIt).centerPoint.front().y);
-    float yBack = (float)((*toIt).centerPoint.back().y);
-    float yPxDiff = yFront-yBack;
-    float yMeterPerPixel = 40.0/825.0;
-    float frameBack = (float)((*toIt).frameNo.back());
-    float frameFront = (float)((*toIt).frameNo.front());
-    float frameDiff = frameBack - frameFront;
-    float frameTime = frameDiff/30.0;
-    float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6;
-    float xFront = (float)((*toIt).centerPoint.front().x);
-    float xBack = (float)((*toIt).centerPoint.back().x);
-    float xPxDiff = xFront-xBack;
-    float xMeterPerPixel = 10.0/690.0;
-    float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
-    export_csv << "ID:" << (*toIt).uniqueID
-               << ",Class:" << (*toIt).vehicleClass
-               << ", Y-Velocity:" << yVelocity
-               << ", X-Velocity:" << xVelocity;
-    if(yVelocity >= 120)
-    {
-      export_csv << ", OVERSPEED";
-    }
-    if(abs(xVelocity) >= 2){
-      export_csv << ",";
-      if(abs(xVelocity >= 3)){
-        export_csv << " AGGRESSIVE";
-      }
-      export_csv << " LANE CHANGE";
-    }
-    export_csv <<"\n";
+    // first time receiving message, record current time
+    prev_message_time =
+    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    message_count++;
   }
-  export_csv.close();
+  else{
+    current_message_time =
+    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    unsigned long frame_period = abs(current_message_time - prev_message_time);
+    float fps = 1.0/(float)frame_period*1000;
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",
+                    std::ofstream::app);
+    export_csv << "FRAME:" << trackerOutput->frameCount << "\n"
+               << "FPS:" << fps << "\n"
+               << "Vehicles in Frame:" << trackerOutput->trackerOutput.size() <<"\n"
+               << "Total Vehicle Count:" << trackerOutput->vehicleCount<< "\n";
+    for(auto toIt = trackerOutput->trackerOutput.begin();
+        toIt != trackerOutput->trackerOutput.end(); ++toIt)
+    {
+      float yFront = (float)((*toIt).centerPoint.front().y);
+      float yBack = (float)((*toIt).centerPoint.back().y);
+      float yPxDiff = yFront-yBack;
+      float yMeterPerPixel = 40.0/825.0;
+      float frameBack = (float)((*toIt).frameNo.back());
+      float frameFront = (float)((*toIt).frameNo.front());
+      float frameDiff = frameBack - frameFront;
+      float frameTime = frameDiff/fps;
+      float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6;
+      float xFront = (float)((*toIt).centerPoint.front().x);
+      float xBack = (float)((*toIt).centerPoint.back().x);
+      float xPxDiff = xFront-xBack;
+      float xMeterPerPixel = 10.0/690.0;
+      float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
+      export_csv << "ID:" << (*toIt).uniqueID
+                 << ",Class:" << (*toIt).vehicleClass
+                 << ", Y-Velocity:" << yVelocity
+                 << ", X-Velocity:" << xVelocity;
+      if(yVelocity >= 120)
+      {
+        export_csv << ", OVERSPEED";
+      }
+      if(abs(xVelocity) >= 2){
+        export_csv << ",";
+        if(abs(xVelocity >= 3)){
+          export_csv << " AGGRESSIVE";
+        }
+        export_csv << " LANE CHANGE";
+      }
+      export_csv <<"\n";
+    }
+    export_csv.close();
+    prev_message_time = current_message_time;
+  }
 }
