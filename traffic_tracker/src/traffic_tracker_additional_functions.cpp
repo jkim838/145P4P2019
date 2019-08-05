@@ -437,9 +437,11 @@ void extractPerspectiveCoord()
             if((*vIt).frameNo.back() != frame_count)
             {
               // update TrackedVehicles
-              (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
-              (*vIt).frameNo.push_back((*ppIt).frameNo.back());
-
+              if((*vIt).centerPoint.back().y >= (*ppIt).centerPoint.back().y)
+              {
+                (*vIt).centerPoint.push_back((*ppIt).centerPoint.back());
+                (*vIt).frameNo.push_back((*ppIt).frameNo.back());
+              }
               #ifdef ENABLE_DEBUG_MODE
               export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/ROI_debugging.csv", std::ofstream::app);
               export_csv << "==========\n";
