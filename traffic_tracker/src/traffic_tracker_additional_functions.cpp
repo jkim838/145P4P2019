@@ -453,6 +453,7 @@ void extractPerspectiveCoord()
           }
         }
 
+        // Update the list of vehicles to delete from tracking list at the end of the frame...
         bool idMatch = false;
         for(auto eVIt = EndTrackVehicles.begin(); eVIt != EndTrackVehicles.end(); ++eVIt)
         {
@@ -500,16 +501,6 @@ void extractPerspectiveCoord()
           {
             export_csv << (*frameIt) << ", ";
           }
-      //DEBUG: FRAME DIFFERENCE IS RETURNED AS ZERO AT ALL TIMES
-      float yFront = (float)((*it).centerPoint.front().y);
-      float yBack = (float)((*it).centerPoint.back().y);
-      float yPxDiff = yFront-yBack;
-      float meterPerPixel = 40/825;
-      float frameBack = (float)((*it).frameNo.back());
-      float frameFront = (float)((*it).frameNo.front());
-      float frameDiff = frameBack - frameFront;
-      float frameTime = frameDiff/30;
-      float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
       export_csv << "]}\n";
     }
     export_csv.close();
@@ -596,16 +587,7 @@ void extractPerspectiveCoord()
           {
             export_csv << (*frameIt) << ", ";
           }
-      long int yFront = (*it).centerPoint.front().y;
-      long int yBack = (*it).centerPoint.back().y;
-      long int yPxDiff = yFront-yBack;
-      float meterPerPixel = (float)40/(float)825;
-      long int frameBack = ((*it).frameNo.back());
-      long int frameFront = ((*it).frameNo.front());
-      long int frameDiff = frameBack - frameFront;
-      float frameTime = (frameBack-frameFront)/(float)30;
-      float yvelocity = (yPxDiff * meterPerPixel)/frameTime * 3.6;
-      export_csv << "], y-velocity:"<< yvelocity <<"}\n";
+      export_csv << "]}\n";
     }
     export_csv.close();
     #endif

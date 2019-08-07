@@ -28,6 +28,7 @@ sig_atomic_t volatile g_request_shutdown = 0;
 int message_count = 0;
 unsigned long prev_message_time;
 unsigned long current_message_time;
+std::vector<float> yVelocities;
 /*** Function Prototypes ***/
 char getch();
 void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& trackerOutput);
@@ -190,11 +191,45 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float xPxDiff = xFront-xBack;
       float xMeterPerPixel = 10.0/690.0;
       float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
+
+      // Calculate average velocities of the vehicle...
+      if(yVelocity < (1.0/0)) // To make sure vehicles with -nan velocity does not get appended...
+      {
+        yVelocities.push_back(yVelocity);
+      }
+      float totalYVelocity=0;
+      float avgYVelocity=0;
+      if(yVelocities.size()!=0)
+      {
+        for(auto yvIt = yVelocities.begin(); yvIt != yVelocities.end(); ++yvIt)
+        {
+          totalYVelocity = totalYVelocity + (*yvIt);
+        }
+        avgYVelocity = (float)totalYVelocity/(float)yVelocities.size();
+      }
+      else // No average velocity info given... because road is 100kmh, assume 100kmh
+      {
+        avgYVelocity = 100;
+      }
+
+      float yVelocityNorm = yVelocity / avgYVelocity;
+
       export_csv << "ID:" << (*toIt).uniqueID
                  << ",Class:" << (*toIt).vehicleClass
                  << ", Y-Velocity:" << yVelocity
+                 << ", Y-Velocity(norm):" << yVelocityNorm
                  << ", X-Velocity:" << xVelocity;
-      if(yVelocity >= 120)
+
+      // Memory control...
+      if(yVelocities.size() > 200)
+      {
+        yVelocities.clear();
+        yVelocities.push_back(avgYVelocity);
+      }
+
+      // Velocity meter
+      if(yVelocityNorm >= 1.3 && (*toIt).frameNo.back() >= 10)
+      // Give 10 frame grace period as the velocity detection at the beginning of the program is jumpy...
       {
         export_csv << ", OVERSPEED";
       }
