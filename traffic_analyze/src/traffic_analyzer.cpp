@@ -184,7 +184,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float frameFront = (float)((*toIt).frameNo.front());
       float frameDiff = frameBack - frameFront;
       float frameTime = frameDiff/30;
-      float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6 / 1.5;
+      float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6 / (30.0/fps);
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
