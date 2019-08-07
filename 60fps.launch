@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<launch>
+   <!-- launch video stream -->
+   <include file="$(find video_stream_opencv)/launch/camera.launch" >
+        <!-- node name and ros graph name -->
+        <arg name="camera_name" value="videofile" />
+        <!-- full path to the video file -->
+        <!-- wget http://techslides.com/demos/sample-videos/small.mp4 -O /tmp/small.mp4 -->
+        <arg name="video_stream_provider" value="/home/master/catkin_ws/src/145P4P2019/video_stream_opencv/60fps-30sec-sample.mp4" />
+        <!-- set camera fps to (video files not affected) -->
+        <arg name="set_camera_fps" value="60"/>
+        <!-- set buffer queue size of frame capturing to -->
+        <arg name="buffer_queue_size" value="1000" />
+        <!-- throttling the querying of frames to -->
+        <arg name="fps" value="60" />
+        <!-- setting frame_id -->
+        <arg name="frame_id" value="videofile_frame" />
+        <!-- camera info loading, take care as it needs the "file:///" at the start , e.g.:
+        "file:///$(find your_camera_package)/config/your_camera.yaml" -->
+        <arg name="camera_info_url" value="" />
+        <!-- flip the image horizontally (mirror it) -->
+        <arg name="flip_horizontal" value="false" />
+        <!-- flip the image vertically -->
+        <arg name="flip_vertical" value="false" />
+        <!-- enable looping playback -->
+        <arg name="loop_videofile" value="false" />
+        <!-- visualize on an image_view window the stream generated -->
+        <arg name="visualize" value="false" />
+   </include>
+
+  <!-- Console launch prefix -->
+  <arg name="launch_prefix" default=""/>
+
+  <!-- Config and weights folder. -->
+  <arg name="yolo_weights_path"          default="$(find darknet_ros)/yolo_network_config/weights"/>
+  <arg name="yolo_config_path"           default="$(find darknet_ros)/yolo_network_config/cfg"/>
+
+  <!-- ROS and network parameter files -->
+  <arg name="ros_param_file"             default="$(find darknet_ros)/config/ros_video_input_test.yaml"/>
+  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov3.yaml"/>
+
+  <!-- Load parameters -->
+  <rosparam command="load" ns="darknet_ros" file="$(arg ros_param_file)"/>
+  <rosparam command="load" ns="darknet_ros" file="$(arg network_param_file)"/>
+
+  <!-- Start darknet and ros wrapper -->
+  <node pkg="darknet_ros" type="darknet_ros" name="darknet_ros" output="screen" launch-prefix="$(arg launch_prefix)">
+    <param name="weights_path"          value="$(arg yolo_weights_path)" />
+    <param name="config_path"           value="$(arg yolo_config_path)" />
+  </node>
+
+  <node pkg="traffic_tracker" type="traffic_tracker_node" name="traffic_tracker_node" output="screen">
+  </node>
+
+  <node pkg="traffic_analyze" type="traffic_analyze_node" name="traffic_analyze_node" output="screen">
+  </node>
+
+ <!--<node name="republish" type="republish" pkg="image_transport" output="screen" 	args="compressed in:=/front_camera/image_raw raw out:=/camera/image_raw" /> -->
+</launch>

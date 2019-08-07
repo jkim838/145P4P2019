@@ -80,7 +80,7 @@ void debugListFrame();
 cv::Mat frame;
 cv::Mat ppImage;
 cv::Mat ppMatrix;
-cv::Size ppImageSize = cv::Size(690, 1220);
+cv::Size ppImageSize = cv::Size(910, 1620);
 std::vector<cv::Point2f> ppCenterPointIn;
 std::vector<cv::Point2f> ppCenterPointOut;
 std::vector<perspectiveVehicle> ppVehicleFrame;

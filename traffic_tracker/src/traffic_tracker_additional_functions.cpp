@@ -23,10 +23,18 @@ Displays the video feed of whichever mode is enabled
 void displayFeed(std::string windowName, cv::Mat imageName)
 {
   #ifdef ENABLE_DEBUG_MODE
-  cv::circle(frame, cv::Point(716,270), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1170,270), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,0), 2, 1);
+  // PP frame end
+  cv::circle(frame, cv::Point(665,170), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1180,170), 10, cv::Scalar(0,255,0), 2, 1);
+  // PP Frame begin
+  cv::circle(frame, cv::Point(120,1080), 10, cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(1840,1080), 10, cv::Scalar(0,255,0), 2, 1);
+  // PP Track End zone                               //b,g,r
+  cv::circle(frame, cv::Point(635,220), 10, cv::Scalar(0,255,255), 2, 1);
+  cv::circle(frame, cv::Point(1210,220), 10, cv::Scalar(0,255,255), 2, 1);
+  // PP Track Start zone
+  cv::circle(frame, cv::Point(340,720), 10, cv::Scalar(0,255,255), 2, 1);
+  cv::circle(frame, cv::Point(1580,720), 10, cv::Scalar(0,255,255), 2, 1);
   #endif
   cv::imshow(windowName, imageName);
   cv::waitKey(30);
@@ -315,6 +323,11 @@ void beginTracking()
     #ifdef DRAW_PERSPECTIVE_INFO
     // Plot green-circle and print uniqueID of the vehicle...
     cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
+    // Plot yellow circle to indicate zones...
+    cv::circle(ppImage, cv::Point(20,1360), 10, cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(20,270), 10, cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(910,1360), 10, cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(910,270), 10, cv::Scalar(0,255,255), 2, 1);
     std::stringstream toPPString;
     toPPString << (*currentFrameIt).detectionID;
     cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
@@ -376,7 +389,7 @@ void extractPerspectiveCoord()
     for(auto ppIt = ppVehicleFrame.begin(); ppIt != ppVehicleFrame.end(); ++ppIt)
     {
       // if the vehicle enters the zone
-      if(195<=(*ppIt).centerPoint.back().y&&(*ppIt).centerPoint.back().y <= 1020)
+      if(270<=(*ppIt).centerPoint.back().y&&(*ppIt).centerPoint.back().y <= 1360)
       {
         // check if there is a previous entry to this vehicle
         // if there is no entry, make one.
@@ -418,7 +431,7 @@ void extractPerspectiveCoord()
           #endif
         }
       }
-      else if((*ppIt).centerPoint.back().y < 195)
+      else if((*ppIt).centerPoint.back().y < 270)
       {
         // vehicle left the zone
         #ifdef ENABLE_DEBUG_MODE
@@ -544,7 +557,7 @@ void extractPerspectiveCoord()
       for(auto vIt = TrackedVehicles.begin(); vIt != TrackedVehicles.end();)
       {
         if((*vIt).uniqueID == (*eVIt) ||
-           (*vIt).frameNo.back() < frame_count - 150) // delete entry if not terminated within 5 seconds
+           (*vIt).frameNo.back() < frame_count - 300) // delete entry if not terminated within 5 seconds
         {
 
           #ifdef ENABLE_DEBUG_MODE
@@ -552,7 +565,7 @@ void extractPerspectiveCoord()
           export_csv << "==========\n";
           export_csv << "Erasing element ID:"
                      << (*vIt).uniqueID << " from the TrackedVehicles\n";
-          if((*vIt).frameNo.back() < frame_count - 150)
+          if((*vIt).frameNo.back() < frame_count - 300)
           {
             export_csv << "Reason: inactivity\n";
           }
@@ -677,14 +690,15 @@ void generatePerspective()
   {
     std::vector<cv::Point2f> roadPoints; //type must be Point2f
     std::vector<cv::Point2f> newImagePoints;
-    roadPoints.push_back(cv::Point(716,270));
-    roadPoints.push_back(cv::Point(1170,270));
-    roadPoints.push_back(cv::Point(310,860));
-    roadPoints.push_back(cv::Point(1530,860));
-    newImagePoints.push_back(cv::Point(0,0));
-    newImagePoints.push_back(cv::Point(690,0));
-    newImagePoints.push_back(cv::Point(0,1220));
-    newImagePoints.push_back(cv::Point(690,1220));
+    // location of frame points to warp
+    roadPoints.push_back(cv::Point(665,170));
+    roadPoints.push_back(cv::Point(1180,170));
+    roadPoints.push_back(cv::Point(120,1080));
+    roadPoints.push_back(cv::Point(1840,1080));
+    newImagePoints.push_back(cv::Point(0,0)); // (0,0)
+    newImagePoints.push_back(cv::Point(910,0)); //(Ymax-Ymin, 0)
+    newImagePoints.push_back(cv::Point(0,1620)); // (0, (Ymax-Ymin)*16/9)
+    newImagePoints.push_back(cv::Point(910,1620));// (Ymax-Ymin, (Ymax-Ymin)*16/9)
     ppMatrix = cv::getPerspectiveTransform(roadPoints, newImagePoints);
     runPerspective = true;
   }

@@ -3,7 +3,7 @@
 int main(int arg, char **argv){
   ros::init(arg, argv, "traffic_tracker");
   ros::NodeHandle tt_nh;
-  ros::Rate loop_rate(29.97);
+  ros::Rate loop_rate(60);
 
   image_transport::ImageTransport transport_image(tt_nh);
 

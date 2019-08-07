@@ -180,16 +180,16 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float yFront = (float)((*toIt).centerPoint.front().y);
       float yBack = (float)((*toIt).centerPoint.back().y);
       float yPxDiff = yFront-yBack;
-      float yMeterPerPixel = 40.0/825.0;
+      float yMeterPerPixel = 40.0/1090.0;
       float frameBack = (float)((*toIt).frameNo.back());
       float frameFront = (float)((*toIt).frameNo.front());
       float frameDiff = frameBack - frameFront;
-      float frameTime = frameDiff/30;
+      float frameTime = frameDiff/30.0;
       float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6 / (30.0/fps);
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
-      float xMeterPerPixel = 10.0/690.0;
+      float xMeterPerPixel = 10.0/690.0; //DEBUG:OUTDATED
       float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
 
       // Calculate average velocities of the vehicle...
