@@ -60,20 +60,36 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
     long int yDimension = (maxY - minY);
     long int xCenter = minX + xDimension/2;
     long int yCenter = minY + yDimension/2;
-    if(vehicleClass=="car"||vehicleClass=="motorbike"||vehicleClass=="bus"||
+    float score = (*it).probability;
+    if(vehicleClass=="car"||vehicleClass=="bus"||
        vehicleClass=="truck")
     {
-      vehicle current =
+      if(365 <= yCenter && yCenter <= 860 && score >= 0.5)
       {
-        vehicleID,
-        vehicleClass,
-        xCenter,
-        yCenter,
-        xDimension,
-        yDimension
-      };
-      vehicles.push_back(current);
-      vehicleID++;
+        vehicle current =
+        {
+          vehicleID,
+          vehicleClass,
+          xCenter,
+          yCenter,
+          xDimension,
+          yDimension
+        };
+        bool duplicateDetection = false;
+        for(auto vIt = vehicles.begin(); vIt != vehicles.end(); ++vIt)
+        {
+          if(((*vIt).y - 100 <= yCenter && yCenter <= (*vIt).y + 100)
+             && ((*vIt).x - 100 <= xCenter && xCenter <= (*vIt).x + 100))
+          {
+            duplicateDetection = true;
+          }
+        }
+        if(!duplicateDetection)
+        {
+          vehicles.push_back(current);
+          vehicleID++;
+        }
+      }
     }
   }
 }
@@ -203,7 +219,7 @@ void beginTracking()
       int absXDiff = abs((*currentFrameIt).x - (*previousFrameIt).x);
       int absYDiff = abs((*currentFrameIt).y - (*previousFrameIt).y);
       int euclidDistance = hypot(absXDiff, absYDiff);
-      int euclidThreshold = hypot(currentXDimension, currentYDimension)/6; // give strict Euclidean distance threshold as it is only a back-up threshold
+      int euclidThreshold = hypot(currentXDimension, currentYDimension)/1.5; // give strict Euclidean distance threshold as it is only a back-up threshold
 
       #ifdef ENABLE_DEBUG_MODE
         export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
