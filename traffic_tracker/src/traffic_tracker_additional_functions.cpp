@@ -48,6 +48,7 @@ information into a vehicle structure that is a more usable form
 void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
 {
   long int vehicleID = 0;
+  //iterate through all bounding boxes in the frame
   for(auto it = bbox->bounding_boxes.begin();
       it != bbox->bounding_boxes.end(); ++it)
   {
@@ -61,10 +62,12 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
     long int xCenter = minX + xDimension/2;
     long int yCenter = minY + yDimension/2;
     float score = (*it).probability;
+    // only check objects with following classes
     if(vehicleClass=="car"||vehicleClass=="bus"||
        vehicleClass=="truck")
     {
-      if(365 <= yCenter && yCenter <= 860 && score >= 0.5)
+      // for vehicles within the detection zone
+      if(310 <= yCenter && yCenter <= 860 && score >= 0.5)
       {
         vehicle current =
         {
@@ -76,14 +79,17 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
           yDimension
         };
         bool duplicateDetection = false;
+        // iterate through all vehicles with its bounding boxes extracted
         for(auto vIt = vehicles.begin(); vIt != vehicles.end(); ++vIt)
         {
+          // if bounding boxes are too close to each other, consider it as one object
           if(((*vIt).y - 100 <= yCenter && yCenter <= (*vIt).y + 100)
-             && ((*vIt).x - 100 <= xCenter && xCenter <= (*vIt).x + 100))
+             && ((*vIt).x - 55 <= xCenter && xCenter <= (*vIt).x + 55))
           {
             duplicateDetection = true;
           }
         }
+        // only append to the bounding box info array when there's no duplicate
         if(!duplicateDetection)
         {
           vehicles.push_back(current);
@@ -215,11 +221,12 @@ void beginTracking()
 
       float IOU = (float)areaInter / (float)areaUnion;
 
-      float IOU_Threshold = 0.20;
+      float IOU_Threshold = 0.2;
       int absXDiff = abs((*currentFrameIt).x - (*previousFrameIt).x);
       int absYDiff = abs((*currentFrameIt).y - (*previousFrameIt).y);
       int euclidDistance = hypot(absXDiff, absYDiff);
-      int euclidThreshold = hypot(currentXDimension, currentYDimension)/1.5; // give strict Euclidean distance threshold as it is only a back-up threshold
+      //int euclidThreshold = hypot(currentXDimension, currentYDimension)/1.5;
+      int euclidThreshold = 100;
 
       #ifdef ENABLE_DEBUG_MODE
         export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/tracker_debugging.csv", std::ofstream::app);
@@ -344,6 +351,10 @@ void beginTracking()
     cv::circle(ppImage, cv::Point(30,245), 10, cv::Scalar(0,255,255), 2, 1);
     cv::circle(ppImage, cv::Point(770,1200), 10, cv::Scalar(0,255,255), 2, 1);
     cv::circle(ppImage, cv::Point(770,245), 10, cv::Scalar(0,255,255), 2, 1);
+    // Plot orange circle to indicate vehicle count zone...
+    cv::circle(ppImage, cv::Point(30,960), 10, cv::Scalar(0,165,255), 2, 1);
+    cv::circle(ppImage, cv::Point(770,960), 10, cv::Scalar(0,165,255), 2, 1);
+
     std::stringstream toPPString;
     toPPString << (*currentFrameIt).detectionID;
     cv::putText(ppImage, toPPString.str(), ppCenterPointOut[0],
@@ -555,7 +566,7 @@ void extractPerspectiveCoord()
       }
       msg.trackerOutput.push_back(toPaste);
       msg.frameCount = frame_count;
-      msg.vehicleCount = vehicleCount;
+      msg.vehicleCount = vehicleCount - inactivityCount;
     }
     tt_tracker_pub.publish(msg);
     msg.trackerOutput.clear();
@@ -583,6 +594,7 @@ void extractPerspectiveCoord()
                      << (*vIt).uniqueID << " from the TrackedVehicles\n";
           if((*vIt).frameNo.back() < frame_count - 150)
           {
+            inactivityCount++;
             export_csv << "Reason: inactivity\n";
           }
           export_csv.close();

@@ -36,10 +36,10 @@
 #define ENABLE_DEBUG_MODE
 #define ENABLE_MOTION_TRACKING
 #define ENABLE_PERSPECTIVE_TRACKING
-//#define ENABLE_PERSPECTIVE_FEED
-//#define DRAW_PERSPECTIVE_INFO
-#define ENABLE_TRACKER_FEED
-#define DRAW_TRACKER_INFO
+#define ENABLE_PERSPECTIVE_FEED
+#define DRAW_PERSPECTIVE_INFO
+//#define ENABLE_TRACKER_FEED
+//#define DRAW_TRACKER_INFO
 //#define SUB_RAW_FEED
 
 /*** Struct Definitions ***/
@@ -98,6 +98,7 @@ int bbox_no = 0;
 long int frame_count = 1; //first frame number
 bool runPerspective = false;
 long int vehicleCount = 0;
+long int inactivityCount = 0;
 
 // ROS Related Global variables
 ros::Publisher tt_tracker_pub;
