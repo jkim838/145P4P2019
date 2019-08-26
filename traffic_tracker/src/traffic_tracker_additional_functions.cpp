@@ -23,18 +23,26 @@ Displays the video feed of whichever mode is enabled
 void displayFeed(std::string windowName, cv::Mat imageName)
 {
   #ifdef ENABLE_DEBUG_MODE
-  // PP frame end
-  cv::circle(frame, cv::Point(690,310), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1200,310), 10, cv::Scalar(0,255,0), 2, 1);
-  // PP Frame begin
-  cv::circle(frame, cv::Point(170,1080), 10, cv::Scalar(0,255,0), 2, 1);
-  cv::circle(frame, cv::Point(1680,1080), 10, cv::Scalar(0,255,0), 2, 1);
-  // PP Track End zone                               //b,g,r
-  cv::circle(frame, cv::Point(650,365), 10, cv::Scalar(0,255,255), 2, 1);
-  cv::circle(frame, cv::Point(1230,365), 10, cv::Scalar(0,255,255), 2, 1);
-  // PP Track Start zone
-  cv::circle(frame, cv::Point(310,860), 10, cv::Scalar(0,255,255), 2, 1);
-  cv::circle(frame, cv::Point(1530,860), 10, cv::Scalar(0,255,255), 2, 1);
+  // Display PP frame end on tracker feed
+  cv::circle(frame, cv::Point(NORMAL_TOP_LEFT_X,NORMAL_TOP_LEFT_Y), 10,
+             cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(NORMAL_TOP_RIGHT_X,NORMAL_TOP_RIGHT_Y), 10,
+             cv::Scalar(0,255,0), 2, 1);
+  // Display PP Frame begin on tracker feed
+  cv::circle(frame, cv::Point(NORMAL_BOT_RIGHT_X,NORMAL_BOT_RIGHT_Y), 10,
+             cv::Scalar(0,255,0), 2, 1);
+  cv::circle(frame, cv::Point(NORMAL_BOT_LEFT_X,NORMAL_BOT_LEFT_Y), 10,
+             cv::Scalar(0,255,0), 2, 1);
+  // Display PP Track End zone on tracker feed         //b,g,r
+  cv::circle(frame, cv::Point(NORMAL_ZONE_END_X1,NORMAL_ZONE_END_Y1), 10,
+             cv::Scalar(0,255,255), 2, 1);
+  cv::circle(frame, cv::Point(NORMAL_ZONE_END_X2,NORMAL_ZONE_END_Y2), 10,
+             cv::Scalar(0,255,255), 2, 1);
+  // Display PP Track Start zone on tracker feed
+  cv::circle(frame, cv::Point(NORMAL_ZONE_START_X1,NORMAL_ZONE_START_Y1), 10,
+             cv::Scalar(0,255,255), 2, 1);
+  cv::circle(frame, cv::Point(NORMAL_ZONE_START_X2,NORMAL_ZONE_START_Y2), 10,
+             cv::Scalar(0,255,255), 2, 1);
   #endif
   cv::imshow(windowName, imageName);
   cv::waitKey(30);
@@ -67,7 +75,7 @@ void getBBOXinfo(const darknet_ros_msgs::BoundingBoxes::ConstPtr& bbox)
        vehicleClass=="truck")
     {
       // for vehicles within the detection zone
-      if(310 <= yCenter && yCenter <= 860 && score >= 0.5)
+      if(NORMAL_TOP_LEFT_Y <= yCenter && yCenter <= NORMAL_ZONE_START_Y1 && score >= 0.5)
       {
         vehicle current =
         {
@@ -347,13 +355,14 @@ void beginTracking()
     // Plot green-circle and print uniqueID of the vehicle...
     cv::circle(ppImage, ppCenterPointOut[0], 10, cv::Scalar(0,255,0), 2, 1);
     // Plot yellow circle to indicate zones...
-    cv::circle(ppImage, cv::Point(30,1200), 10, cv::Scalar(0,255,255), 2, 1);
-    cv::circle(ppImage, cv::Point(30,245), 10, cv::Scalar(0,255,255), 2, 1);
-    cv::circle(ppImage, cv::Point(770,1200), 10, cv::Scalar(0,255,255), 2, 1);
-    cv::circle(ppImage, cv::Point(770,245), 10, cv::Scalar(0,255,255), 2, 1);
-    // Plot orange circle to indicate vehicle count zone...
-    cv::circle(ppImage, cv::Point(30,960), 10, cv::Scalar(0,165,255), 2, 1);
-    cv::circle(ppImage, cv::Point(770,960), 10, cv::Scalar(0,165,255), 2, 1);
+    cv::circle(ppImage, cv::Point(PP_ZONE_START_X1,PP_ZONE_START_Y1), 10,
+               cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(PP_ZONE_END_X1,PP_ZONE_END_Y2), 10,
+               cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(PP_ZONE_START_X2,PP_ZONE_START_Y2), 10,
+               cv::Scalar(0,255,255), 2, 1);
+    cv::circle(ppImage, cv::Point(PP_ZONE_END_X2,PP_ZONE_END_Y2), 10,
+               cv::Scalar(0,255,255), 2, 1);
 
     std::stringstream toPPString;
     toPPString << (*currentFrameIt).detectionID;
@@ -416,7 +425,7 @@ void extractPerspectiveCoord()
     for(auto ppIt = ppVehicleFrame.begin(); ppIt != ppVehicleFrame.end(); ++ppIt)
     {
       // if the vehicle enters the zone
-      if(245<=(*ppIt).centerPoint.back().y&&(*ppIt).centerPoint.back().y <= 1200)
+      if(PP_ZONE_END_Y1<=(*ppIt).centerPoint.back().y&&(*ppIt).centerPoint.back().y <= PP_ZONE_START_Y1)
       {
         // check if there is a previous entry to this vehicle
         // if there is no entry, make one.
@@ -458,7 +467,7 @@ void extractPerspectiveCoord()
           #endif
         }
       }
-      else if((*ppIt).centerPoint.back().y < 245)
+      else if((*ppIt).centerPoint.back().y < PP_ZONE_END_Y1)
       {
         // vehicle left the zone
         #ifdef ENABLE_DEBUG_MODE
@@ -719,10 +728,10 @@ void generatePerspective()
     std::vector<cv::Point2f> roadPoints; //type must be Point2f
     std::vector<cv::Point2f> newImagePoints;
     // location of frame points to warp
-    roadPoints.push_back(cv::Point(690,310));
-    roadPoints.push_back(cv::Point(1200,310));
-    roadPoints.push_back(cv::Point(170,1080));
-    roadPoints.push_back(cv::Point(1680,1080));
+    roadPoints.push_back(cv::Point(NORMAL_TOP_LEFT_X,NORMAL_TOP_LEFT_Y));
+    roadPoints.push_back(cv::Point(NORMAL_TOP_RIGHT_X,NORMAL_TOP_RIGHT_Y));
+    roadPoints.push_back(cv::Point(NORMAL_BOT_LEFT_X,NORMAL_BOT_LEFT_Y));
+    roadPoints.push_back(cv::Point(NORMAL_BOT_RIGHT_X,NORMAL_BOT_RIGHT_Y));
     newImagePoints.push_back(cv::Point(0,0)); // (0,0)
     newImagePoints.push_back(cv::Point(770,0)); //(Ymax-Ymin, 0)
     newImagePoints.push_back(cv::Point(0,1370)); // (0, (Ymax-Ymin)*16/9)

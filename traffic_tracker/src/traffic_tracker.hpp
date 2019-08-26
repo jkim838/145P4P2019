@@ -42,6 +42,106 @@
 //#define DRAW_TRACKER_INFO
 //#define SUB_RAW_FEED
 
+/*** MACRO DEFINITION FOR FRAME ***/
+/*** COORDINATE KEYS ***/
+/***
+trueoneside_sharp.mp4
+  #define NORMAL_TOP_LEFT_X 690
+  #define NORMAL_TOP_LEFT_Y 310
+  #define NORMAL_TOP_RIGHT_X 1200
+  #define NORMAL_TOP_RIGHT_Y 310
+  #define NORMAL_BOT_LEFT_X 170
+  #define NORMAL_BOT_LEFT_Y 1080
+  #define NORMAL_BOT_RIGHT_X 1680
+  #define NORMAL_BOT_RIGHT_Y 1080
+
+30fps-90sec-sample.mp4
+  #define NORMAL_TOP_LEFT_X 670
+  #define NORMAL_TOP_LEFT_Y 160
+  #define NORMAL_TOP_RIGHT_X 1210
+  #define NORMAL_TOP_RIGHT_Y 160
+  #define NORMAL_BOT_LEFT_X 130
+  #define NORMAL_BOT_LEFT_Y 1080
+  #define NORMAL_BOT_RIGHT_X 1920
+  #define NORMAL_BOT_RIGHT_Y 1080
+***/
+
+#define NORMAL_TOP_LEFT_X 670
+#define NORMAL_TOP_LEFT_Y 160
+#define NORMAL_TOP_RIGHT_X 1210
+#define NORMAL_TOP_RIGHT_Y 160
+#define NORMAL_BOT_LEFT_X 130
+#define NORMAL_BOT_LEFT_Y 1080
+#define NORMAL_BOT_RIGHT_X 1920
+#define NORMAL_BOT_RIGHT_Y 1080
+
+/*** MACRO DEFINITION FOR TRACKING ZONES ***/
+/*** COORDINATE KEYS ***/
+/***
+trueoneside_sharp.mp4
+  #define NORMAL_ZONE_START_X1 310
+  #define NORMAL_ZONE_START_Y1 860
+  #define NORMAL_ZONE_START_X2 1530
+  #define NORMAL_ZONE_START_Y2 860
+  #define NORMAL_ZONE_END_X1 650
+  #define NORMAL_ZONE_END_Y1 365
+  #define NORMAL_ZONE_END_X2 1230
+  #define NORMAL_ZONE_END_Y2 365
+
+30fps-90sec-sample.mp4
+  #define NORMAL_ZONE_START_X1 345
+  #define NORMAL_ZONE_START_Y1 710
+  #define NORMAL_ZONE_START_X2 1640
+  #define NORMAL_ZONE_START_Y2 710
+  #define NORMAL_ZONE_END_X1 640
+  #define NORMAL_ZONE_END_Y1 220
+  #define NORMAL_ZONE_END_X2 1250
+  #define NORMAL_ZONE_END_Y2 220
+***/
+
+#define NORMAL_ZONE_START_X1 345
+#define NORMAL_ZONE_START_Y1 710
+#define NORMAL_ZONE_START_X2 1640
+#define NORMAL_ZONE_START_Y2 710
+#define NORMAL_ZONE_END_X1 640
+#define NORMAL_ZONE_END_Y1 220
+#define NORMAL_ZONE_END_X2 1250
+#define NORMAL_ZONE_END_Y2 220
+
+/*** MACRO DEFINITION FOR PPFEED TRACKING ZONE ***/
+/*** PLEASE COMPLETE THIS MACRO AFTER PP COORDS ARE STABILIZED****/
+/*** COORDINATE KEYS ***/
+/***
+trueoneside_sharp.mp4
+  #define PP_ZONE_START_X1 30
+  #define PP_ZONE_START_Y1 1200
+  #define PP_ZONE_START_X2 770
+  #define PP_ZONE_START_Y2 1200
+  #define PP_ZONE_END_X1 30
+  #define PP_ZONE_END_Y1 245
+  #define PP_ZONE_END_X2 770
+  #define PP_ZONE_END_Y2 245
+
+30fps-90sec-sample.mp4
+  #define PP_ZONE_START_X1 30
+  #define PP_ZONE_START_Y1 1140
+  #define PP_ZONE_START_X2 730
+  #define PP_ZONE_START_Y2 1140
+  #define PP_ZONE_END_X1 30
+  #define PP_ZONE_END_Y1 250
+  #define PP_ZONE_END_X2 715
+  #define PP_ZONE_END_Y2 250
+***/
+
+#define PP_ZONE_START_X1 30
+#define PP_ZONE_START_Y1 1140
+#define PP_ZONE_START_X2 730
+#define PP_ZONE_START_Y2 1140
+#define PP_ZONE_END_X1 30
+#define PP_ZONE_END_Y1 250
+#define PP_ZONE_END_X2 715
+#define PP_ZONE_END_Y2 250
+
 /*** Struct Definitions ***/
 // define each instance of vehicle in the frame
 struct vehicle{
