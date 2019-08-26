@@ -25,7 +25,7 @@
 std::ofstream export_csv;
 // Signal-safe flag for whether shutdown is requested
 sig_atomic_t volatile g_request_shutdown = 0;
-int message_count = 0;
+long int message_count = 0;
 unsigned long prev_message_time;
 unsigned long current_message_time;
 std::vector<float> yVelocities;
@@ -48,15 +48,16 @@ int main(int argc, char **argv)
   auto start_time = std::chrono::system_clock::now();
   std::time_t start_time_formatted = std::chrono::system_clock::to_time_t(start_time);
   std::string start_time_string = std::ctime(&start_time_formatted);
-  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",
+  start_time_string.pop_back();
+  export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json",
                   std::ofstream::app);
+  export_csv << "[";
   export_csv.close();
   ros::NodeHandle ta_nh;
 
   // Subscriber Declaration
   ros::Subscriber ta_trackerOutput_sub =
   ta_nh.subscribe("/traffic_tracker/trackerOutput", 1000, analyze_trackerOutput);
-
   // Publisher Declaration
   // ros::Publisher ta_pub = ta_nh.advertise<std_msgs::Uint64>("/TopicName", 10)
   ros::Rate loop_rate(1000);
@@ -72,21 +73,22 @@ int main(int argc, char **argv)
      auto record_time = std::chrono::system_clock::now();
      std::time_t record_time_formatted = std::chrono::system_clock::to_time_t(record_time);
      std::string record_time_string = std::ctime(&record_time_formatted);
-     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv", std::ofstream::app);
-     export_csv << "Start:," << start_time_string; //Record begin time...
-     export_csv << "End:," << record_time_string;
+     record_time_string.pop_back();
+     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json", std::ofstream::app);
+     export_csv << ",{\"Start\": \"" << start_time_string << "\","; //Record begin time...
+     export_csv << "\"End\": \"" << record_time_string << "\"}]";
      export_csv.close();
      printf("SAVING DATA: %d \n", export_csv.is_open());
-     std::string rename_file_to = "/home/master/catkin_ws/src/145P4P2019/csv/"+record_time_string+".csv";
-     std::rename("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",
+     std::string rename_file_to = "/home/master/catkin_ws/src/145P4P2019/csv/"+record_time_string+".json";
+     std::rename("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json",
                  rename_file_to.c_str());
-     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv");
+     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json");
      export_csv.close();
     }
     loop_rate.sleep();
   }
 
-  std::remove("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv");
+  std::remove("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json");
   ros::shutdown();
 
 }
@@ -168,12 +170,20 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     unsigned long frame_period = abs(current_message_time - prev_message_time);
     float fps = 1.0/(float)frame_period*1000;
-    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.csv",
+    export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json",
                     std::ofstream::app);
-    export_csv << "FRAME:" << trackerOutput->frameCount << "\n"
-               << "FPS:" << fps << "\n"
-               << "Vehicles in Frame:" << trackerOutput->trackerOutput.size() <<"\n"
-               << "Total Vehicle Count:" << trackerOutput->vehicleCount<< "\n";
+    if(message_count == 1)
+    {
+      export_csv << "{\"Frame\": " << "\"" << trackerOutput->frameCount << "\",";
+    }
+    else
+    {
+      export_csv << ",{\"Frame\": " << "\"" << trackerOutput->frameCount << "\",";
+    }
+    export_csv << "\"FPS\": " << "\"" << fps << "\","
+               << "\"FrameCount\":" << " \"" << trackerOutput->trackerOutput.size() <<"\","
+               << "\"TotalCount\":" << " \"" <<trackerOutput->vehicleCount<< "\","
+               << "\"FrameVehicles\":" << " [";
     for(auto toIt = trackerOutput->trackerOutput.begin();
         toIt != trackerOutput->trackerOutput.end(); ++toIt)
     {
@@ -214,11 +224,12 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
 
       float yVelocityNorm = yVelocity / avgYVelocity;
 
-      export_csv << "ID:" << (*toIt).uniqueID
-                 << ",Class:" << (*toIt).vehicleClass
-                 << ", Y-Velocity:" << yVelocity
-                 << ", Y-Velocity(norm):" << yVelocityNorm
-                 << ", X-Velocity:" << xVelocity;
+      export_csv << "{\"ID\":" << " \"" << (*toIt).uniqueID << "\","
+                 << "\"Class\":" << " \"" << (*toIt).vehicleClass << "\","
+                 << "\"YVelocity\":" << " \"" << yVelocity << "\","
+                 << "\"normYVelocity\":" << " \"" << yVelocityNorm << "\","
+                 << "\"XVelocity\":" << " \"" << xVelocity << "\","
+                 << "\"Overspeed\":";
 
       // Memory control...
       if(yVelocities.size() > 200)
@@ -231,18 +242,36 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       if(yVelocityNorm >= 1.3 && (*toIt).frameNo.back() >= 10)
       // Give 10 frame grace period as the velocity detection at the beginning of the program is jumpy...
       {
-        export_csv << ", OVERSPEED";
+        export_csv << " true";
       }
+      else
+      {
+        export_csv << " false";
+      }
+      export_csv << ",\"LangeChange\": {\"change\": ";
       if(abs(xVelocity) >= 2){
-        export_csv << ",";
+        export_csv << "true, \"aggressive\":";
         if(abs(xVelocity >= 3)){
-          export_csv << " AGGRESSIVE";
+          export_csv << "true";
         }
-        export_csv << " LANE CHANGE";
+        else
+        {
+          export_csv << "false";
+        }
       }
-      export_csv <<"\n";
+      else
+      {
+        export_csv << "false,\"aggressive\": false";
+      }
+      export_csv << "}}";
+      if(std::next(toIt) != trackerOutput->trackerOutput.end())
+      {
+        export_csv << ",";
+      }
     }
+    export_csv << "]}";
     export_csv.close();
     prev_message_time = current_message_time;
+    message_count++;
   }
 }
