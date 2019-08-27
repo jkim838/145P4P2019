@@ -196,12 +196,19 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float frameDiff = frameBack - frameFront;
       float frameTime = frameDiff/fps;
       float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6; // (30.0/fps);
+      if(std::isnan(yVelocity) || yVelocity >= 200)
+      {
+        yVelocity = -1.0;
+      }
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
       float xMeterPerPixel = 10.0/1170.0; //DEBUG:OUTDATED
       float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
-
+      if(std::isnan(xVelocity) || xVelocity >= 200)
+      {
+        xVelocity = 0;
+      }
       // Calculate average velocities of the vehicle...
       if(yVelocity < (1.0/0)) // To make sure vehicles with -nan velocity does not get appended...
       {
