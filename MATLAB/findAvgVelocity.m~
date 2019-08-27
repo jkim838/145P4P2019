@@ -1,0 +1,34 @@
+jsonData = jsondecode(fileread('test.json'));
+
+%Preallocate array size
+YVelocities = zeros(1,1000);
+IDOccCounter = zeros(1,1000);
+IDs = -1.*ones(1,1000);
+for i = 1:length(jsonData)-1
+    FrameVehicleLength = length(jsonData{i}.FrameVehicles);
+    for j = 1:FrameVehicleLength
+        realID = jsonData{i}.FrameVehicles(j).ID;
+        realYVel = jsonData{i}.FrameVehicles(j).YVelocity;
+        if realYVel < 0
+            realYVel = 0;
+        end
+        indexID = realID+1;
+        IDs(indexID) = realID;
+        YVelocities(indexID) = YVelocities(indexID) + realYVel;
+        IDOccCounter(indexID) = IDOccCounter(indexID)+1;
+    end
+end
+
+%Calculate average velocity of each unique vehicles
+averageVelocities = YVelocities./IDOccCounter;
+%Replace all infinite velocities (i.e. NaN) with -1, and remove those
+%entries from averageVelocities
+averageVelocities(isnan(averageVelocities)) = -1;
+averageVelocities(averageVelocities==-1)=[];
+%Remove all entries with dummy values (i.e. -1)
+IDs(IDs==-1)=[];
+%Combine ID array and velocity array
+yVelocities = [IDs;averageVelocities];
+
+
+

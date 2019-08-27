@@ -169,21 +169,25 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
     current_message_time =
     std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     unsigned long frame_period = abs(current_message_time - prev_message_time);
+    if(frame_period == 0)
+    {
+      frame_period = -1;
+    }
     float fps = 1.0/(float)frame_period*1000;
     export_csv.open("/home/master/catkin_ws/src/145P4P2019/csv/active_record.json",
                     std::ofstream::app);
     if(message_count == 1)
     {
-      export_csv << "{\"Frame\": " << "\"" << trackerOutput->frameCount << "\",";
+      export_csv << "{\"Frame\": " << trackerOutput->frameCount << ",";
     }
     else
     {
-      export_csv << ",{\"Frame\": " << "\"" << trackerOutput->frameCount << "\",";
+      export_csv << ",{\"Frame\": " << trackerOutput->frameCount << ",";
     }
-    export_csv << "\"FPS\": " << "\"" << fps << "\","
-               << "\"FrameCount\":" << " \"" << trackerOutput->trackerOutput.size() <<"\","
-               << "\"TotalCount\":" << " \"" <<trackerOutput->vehicleCount<< "\","
-               << "\"FrameVehicles\":" << " [";
+    export_csv << "\"FPS\": " << fps << ","
+               << "\"FrameCount\": " << trackerOutput->trackerOutput.size() <<","
+               << "\"TotalCount\": " <<trackerOutput->vehicleCount<< ","
+               << "\"FrameVehicles\": " << " [";
     for(auto toIt = trackerOutput->trackerOutput.begin();
         toIt != trackerOutput->trackerOutput.end(); ++toIt)
     {
@@ -195,17 +199,21 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float frameFront = (float)((*toIt).frameNo.front());
       float frameDiff = frameBack - frameFront;
       float frameTime = frameDiff/fps;
-      float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6; // (30.0/fps);
-      if(std::isnan(yVelocity) || yVelocity >= 200)
+      if(frameTime == 0)
       {
-        yVelocity = -1.0;
+        frameTime = -1.0;
+      }
+      float yVelocity = (yPxDiff * yMeterPerPixel)/frameTime * 3.6; // (30.0/fps);
+      if(yVelocity >= 200 || std::isnan(yVelocity))
+      {
+        yVelocity = 0;
       }
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
       float xMeterPerPixel = 10.0/1170.0; //DEBUG:OUTDATED
       float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
-      if(std::isnan(xVelocity) || xVelocity >= 200)
+      if(xVelocity >= 200 || std::isnan(xVelocity))
       {
         xVelocity = 0;
       }
@@ -215,7 +223,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
         yVelocities.push_back(yVelocity);
       }
       float totalYVelocity=0;
-      float avgYVelocity=0;
+      float avgYVelocity=100;
       if(yVelocities.size()!=0)
       {
         for(auto yvIt = yVelocities.begin(); yvIt != yVelocities.end(); ++yvIt)
@@ -223,19 +231,18 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
           totalYVelocity = totalYVelocity + (*yvIt);
         }
         avgYVelocity = (float)totalYVelocity/(float)yVelocities.size();
+        if(avgYVelocity == 0 || std::isnan(avgYVelocity))
+        {
+          avgYVelocity = 100;
+        }
       }
-      else // No average velocity info given... because road is 100kmh, assume 100kmh
-      {
-        avgYVelocity = 100;
-      }
-
       float yVelocityNorm = yVelocity / avgYVelocity;
 
-      export_csv << "{\"ID\":" << " \"" << (*toIt).uniqueID << "\","
-                 << "\"Class\":" << " \"" << (*toIt).vehicleClass << "\","
-                 << "\"YVelocity\":" << " \"" << yVelocity << "\","
-                 << "\"normYVelocity\":" << " \"" << yVelocityNorm << "\","
-                 << "\"XVelocity\":" << " \"" << xVelocity << "\","
+      export_csv << "{\"ID\": " << (*toIt).uniqueID << ","
+                 << "\"Class\": " << "\"" << (*toIt).vehicleClass << "\","
+                 << "\"YVelocity\": " << yVelocity << ","
+                 << "\"normYVelocity\": " << yVelocityNorm << ","
+                 << "\"XVelocity\": " << xVelocity << ","
                  << "\"Overspeed\":";
 
       // Memory control...
@@ -255,7 +262,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       {
         export_csv << " false";
       }
-      export_csv << ",\"LangeChange\": {\"change\": ";
+      export_csv << ",\"LaneChange\": {\"change\": ";
       if(abs(xVelocity) >= 2){
         export_csv << "true, \"aggressive\":";
         if(abs(xVelocity >= 3)){
