@@ -2,7 +2,7 @@ clear
 clc
 
 % define name of file to be opened
-fname = '30fps-90sec-sample.json';
+fname = 'trueoneside_sharp.json';
 val = jsondecode(fileread(fname));
 
 % preallocate arrays

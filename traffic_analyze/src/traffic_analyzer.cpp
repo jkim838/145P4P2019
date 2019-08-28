@@ -211,8 +211,9 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
-      float xMeterPerPixel = 10.0/1170.0; //DEBUG:OUTDATED
-      float xVelocity = (xPxDiff * xMeterPerPixel)/frameTime * 3.6;
+      float xMeterPerPixel = 10.0/740.0; //DEBUG:OUTDATED
+      float xDistance = xPxDiff * xMeterPerPixel;
+      float xVelocity = xDistance/frameTime * 3.6;
       if(xVelocity >= 200 || std::isnan(xVelocity))
       {
         xVelocity = 0;
@@ -242,7 +243,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
                  << "\"Class\": " << "\"" << (*toIt).vehicleClass << "\","
                  << "\"YVelocity\": " << yVelocity << ","
                  << "\"normYVelocity\": " << yVelocityNorm << ","
-                 << "\"XVelocity\": " << xVelocity << ","
+                 << "\"XVelocity\": " << xPxDiff << ","
                  << "\"Overspeed\":";
 
       // Memory control...
@@ -263,7 +264,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
         export_csv << " false";
       }
       export_csv << ",\"LaneChange\": {\"change\": ";
-      if(abs(xVelocity) >= 2){
+      if(abs(xPxDiff) >= 50){
         export_csv << "true, \"aggressive\":";
         if(abs(xVelocity >= 3)){
           export_csv << "true";
