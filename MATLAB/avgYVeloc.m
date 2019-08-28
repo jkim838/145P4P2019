@@ -1,34 +1,21 @@
-function avgYVeloc(YVelocities,IDOccCounter)
-%AVGYVELOC Summary of this function goes here
-%   Detailed explanation goes here
+function avgYVeloc(YVelocities,IDReoccur, IDs)
 
-%Calculate average velocity of each unique vehicles
-averageVelocities = YVelocities./IDOccCounter;
+% Calculate average velocity of each unique vehicles
+averageVelocities = YVelocities./IDReoccur;
 
-
-%Replace all infinite velocities (i.e. NaN) with -1, and remove those
-%entries.
-averageVelocities(isnan(averageVelocities)) = -1;
-averageVelocities(averageVelocities==-1)=[];
-FrameNo(FrameNo==-1)=[];
-FrameCountNo(FrameCountNo==-1)=[];
-%Remove all entries with dummy values (i.e. -1)
+% Clean matrices. Remove all infinite values or -1 dummy entries
+averageVelocities(isnan(averageVelocities)) =[];
 IDs(IDs==-1)=[];
-%Combine ID array to information array
-uniqueAvgVelocities = [IDs;averageVelocities];
-CountNoPerFrame = [FrameNo;FrameCountNo];
 
-figure(1);
-subplot(2,1,1);
+% Combine ID array to information array
+uniqueAvgVelocities = [IDs;averageVelocities];
+
+% Plotting
+figure(1)
 stem(uniqueAvgVelocities(2,1:length(uniqueAvgVelocities)));
 title('Average Velocity of Each Vehicle');
 xlabel('ID');
 ylabel('Velocity (km/h)');
-subplot(2,1,2);
-bar(CountNoPerFrame(2,1:length(CountNoPerFrame)));
-title('Number of Vehicles Present per Frame');
-xlabel('Frame');
-ylabel('Vehicle Count');
 
 end
 

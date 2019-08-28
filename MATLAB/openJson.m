@@ -8,12 +8,14 @@ val = jsondecode(fileread(fname));
 % preallocate arrays
 YVelocities = zeros(1,1000);
 IDReoccur = zeros(1,1000);
+IDs = -1.*ones(1,1000);
+classes = -1.*ones(1,1000);
 
 % last array is the timestamp. Exclude as it has a different array size
 lastFrame = length(val)-1;
 
 % remove redundant top level
-% was a cell array of structures which cant be plotted
+% top level was a cell array of structures which cant be plotted
 S = [val{1:lastFrame,1}];
 
 % define all base level variables into a simple matrix of entries for plotting
@@ -32,29 +34,36 @@ for i = 1:lastFrame
         xVel        = S(i).FrameVehicles(j).XVelocity;
         Overspeed   = S(i).FrameVehicles(j).Overspeed;
         
-        %If errror in velocity is infinite (i.e. -1), then set to zero
+        % If errror in velocity is infinite (i.e. -1), then set to zero
         if yVel < 0
             yVel = 0;
         end
-        %MATLAB index starts from 1 therefore shift by one
-        %vehicleID - 0 -> MATLAB index = 1)
+        
+        % MATLAB index starts from 1 therefore shift by one
+        % vehicleID - 0 -> MATLAB index = 1)
         indexID = ID+1;
         
-        %Record vehicleID
+        % Record vehicleID
         IDs(indexID) = ID;
-        %Accumulate vehicle speed for each unique vehicles
+        
+        % Record vehicle class
+        if strcmp(class, 'car') class = 1; end
+        if strcmp(class, 'bus') class = 2; end
+        if strcmp(class, 'truck') class = 3; end
+        
+        classes(indexID) = class;
+        
+        % Accumulate vehicle speed for each unique vehicles
         YVelocities(indexID) = YVelocities(indexID) + yVel;
         IDReoccur(indexID) = IDReoccur(indexID)+1;
     end
 end
 
-%% can use the following to test data is working
-% plot frame number vs total vehicle count
+%% Plot average y velocity of each vehicle and the number of vehicles present in each frame
+avgYVeloc(YVelocities,IDReoccur, IDs);
 
-% figure
-% plot(frame, totalCount)
-% title('Frame Number vs Total Number of Vehicles Counted')
-% xlabel('Frame Number')
-% ylabel('Total Vehicles Counted')
+%% Plot the number of vehicles present in each frame
+countPerFrame(frame, frameCount)
 
-
+%% Vehicle class types
+classAndCount(classes, frame, totalCount)
