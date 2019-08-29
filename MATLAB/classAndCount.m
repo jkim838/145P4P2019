@@ -1,4 +1,7 @@
 function  classAndCount(classes, frame, totalCount)
+% This function generates two plots. The first is a pie chart showing the
+% percentage of vehicles of each type in the video feed. The secon is a
+% plot of the the accumulative count of total vehicles in each frame
 
 % Clean matrices. Remove all -1 dummy entries
 frame(frame==-1)=[];
@@ -9,15 +12,12 @@ counts = histc(classes, unique(classes));
 
 % Plotting
 figure(3)
-subplot(2,1,1);
-% witcraft required to label pie charts it MATLAB
-chart = pie(counts);
-T = chart(strcmpi(get(chart,'Type'),'text'));
-P = cell2mat(get(T,'Position'));
-set(T,{'Position'},num2cell(P*0.4,2))
-text(P(:,1),P(:,2),{'Car','Bus','Truck'})
+pie(counts);
+labels = {'Car','Bus','Truck'};
+legend(labels,'Location','southoutside','Orientation','horizontal');
 
-subplot(2,1,2);
+
+figure(4)
 plot(frame, totalCount); % could split class data to have a line for each
 title('Frame Number vs Total Number of Vehicles Counted')
 xlabel('Frame Number')

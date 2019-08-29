@@ -1,4 +1,6 @@
 function avgYVeloc(YVelocities,IDReoccur, IDs)
+% This function generates a stem plot of the vehicles based on their IDs 
+% and average velocity
 
 % Calculate average velocity of each unique vehicles
 averageVelocities = YVelocities./IDReoccur;
