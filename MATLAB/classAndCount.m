@@ -19,7 +19,7 @@ legend(labels,'Location','southoutside','Orientation','horizontal');
 
 figure(4)
 plot(frame, totalCount); % could split class data to have a line for each
-title('Frame Number vs Total Number of Vehicles Counted')
+title('Cumulative number of vehicles counted over time')
 xlabel('Frame Number')
 ylabel('Total Vehicles Counted')
 end

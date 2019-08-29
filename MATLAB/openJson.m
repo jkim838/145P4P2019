@@ -2,7 +2,7 @@ clear
 clc
 
 % define name of file to be opened
-fname = '30fps-90sec-sample.json';
+fname = '30fps-120sec-sample.json';
 val = jsondecode(fileread(fname));
 
 % preallocate arrays
@@ -88,4 +88,4 @@ classAndCount(classes, frame, totalCount)
 
 %% Plot of lane changes
 %NOTE: this function is an incomplete proof of concept for lane changing
-% laneChanges(changes,IDs)
+laneChanges(changes,IDs)
