@@ -11,15 +11,18 @@ classes(classes==-1)=[];
 counts = histc(classes, unique(classes));
 
 % Plotting
+% NOTE: a warning will be displayed in command window if no vehicles of a
+% type present in data
 figure(3)
 pie(counts);
 labels = {'Car','Bus','Truck'};
 legend(labels,'Location','southoutside','Orientation','horizontal');
+title('Percentage of vehicles of each type')
 
 
 figure(4)
 plot(frame, totalCount); % could split class data to have a line for each
-title('Cumulative number of vehicles counted over time')
+title('Cumulative Number of Vehicles Counted Over Time')
 xlabel('Frame Number')
 ylabel('Total Vehicles Counted')
 end

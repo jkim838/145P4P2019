@@ -1,3 +1,9 @@
+
+%% OLD FUNCTION!
+%
+%
+%
+
 jsonData = jsondecode(fileread('30fps-90sec-sample.json'));
 
 %Preallocate array size

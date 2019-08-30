@@ -8,7 +8,7 @@ changes = changes(1, 1:length(IDs)); % not sure if this is correct
 
 figure(5)
 bar(IDs, changes);
-title('ID of vehicles which have performed a lane change');
+title('IDs of Vehicles Which Performed a Lane Changed');
 xlabel('IDs');
 ylabel('Changed Lane');
 end

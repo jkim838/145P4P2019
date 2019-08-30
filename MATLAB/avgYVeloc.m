@@ -15,10 +15,10 @@ uniqueAvgVelocities = [IDs;averageVelocities];
 % Plotting
 figure(1)
 stem(uniqueAvgVelocities(2,1:length(uniqueAvgVelocities)));
-line([0 length(IDs)],[100 100],'Color','red','LineStyle','--')
 title('Average Velocity of Each Vehicle');
 xlabel('ID');
 ylabel('Velocity (km/h)');
-
+line([0 length(IDs)],[100 100],'Color','red','LineStyle','--') % speed limit
+%text(length(IDs)-25,105,'Speed Limit','Color','red')
 end
 
