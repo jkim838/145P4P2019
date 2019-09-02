@@ -194,7 +194,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float yFront = (float)((*toIt).centerPoint.front().y);
       float yBack = (float)((*toIt).centerPoint.back().y);
       float yPxDiff = yFront-yBack;
-      float yMeterPerPixel = 40.0/955.0;
+      float yMeterPerPixel = 40.0/920.0;
       float frameBack = (float)((*toIt).frameNo.back());
       float frameFront = (float)((*toIt).frameNo.front());
       float frameDiff = frameBack - frameFront;
@@ -211,7 +211,7 @@ void analyze_trackerOutput(const traffic_tracker::trackerOutput::ConstPtr& track
       float xFront = (float)((*toIt).centerPoint.front().x);
       float xBack = (float)((*toIt).centerPoint.back().x);
       float xPxDiff = xFront-xBack;
-      float xMeterPerPixel = 10.0/740.0; //DEBUG:OUTDATED
+      float xMeterPerPixel = 10.0/700.0; //DEBUG:OUTDATED
       float xDistance = xPxDiff * xMeterPerPixel;
       float xVelocity = xDistance/frameTime * 3.6;
       if(xVelocity >= 200 || std::isnan(xVelocity))
