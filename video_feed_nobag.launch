@@ -6,7 +6,7 @@
         <arg name="camera_name" value="videofile" />
         <!-- full path to the video file -->
         <!-- wget http://techslides.com/demos/sample-videos/small.mp4 -O /tmp/small.mp4 -->
-        <arg name="video_stream_provider" value="/home/master/catkin_ws/src/145P4P2019/video_stream_opencv/30fps-120sec-sample.mp4" />
+        <arg name="video_stream_provider" value="/home/master/catkin_ws/src/145P4P2019/video_stream_opencv/trueoneside_sharp.mp4" />
         <!-- set camera fps to (video files not affected) -->
         <!-- <arg name="set_camera_fps" value="30"/> -->
         <!-- set buffer queue size of frame capturing to -->
@@ -37,7 +37,7 @@
 
   <!-- ROS and network parameter files -->
   <arg name="ros_param_file"             default="$(find darknet_ros)/config/ros_video_input_test.yaml"/>
-  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov3.yaml"/>
+  <arg name="network_param_file"         default="$(find darknet_ros)/config/yolov2-voc.yaml"/>
 
   <!-- Load parameters -->
   <rosparam command="load" ns="darknet_ros" file="$(arg ros_param_file)"/>
