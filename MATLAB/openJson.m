@@ -2,7 +2,7 @@ clear
 clc
 
 % define name of file to be opened
-fname = 'trueoneside_sharp.json';
+fname = '30fps-90sec-sample.json';
 val = jsondecode(fileread(fname));
 
 % preallocate arrays
@@ -89,6 +89,3 @@ classAndCount(classes, frame, totalCount)
 %% Plot of lane changes
 %NOTE: this function is an incomplete proof of concept for lane changing
 %laneChanges(changes,IDs)
-
-%% Plot Framerate of video to assess performance
-fpsPerFrame(frame,fps)
