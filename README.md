@@ -179,7 +179,7 @@ To exit program, press *ctrl+c*.
 
 ### **5. Using MATLAB Script**
 
-To use MATLAB analyser script on JSON output file, move the JSON file to *MATLAB* folder.
+To use MATLAB analyser script on JSON output file, move the JSON file to *MATLAB* folder, located at *~/catkin_ws/src/145P4P2019/MATLAB*
 
 Open MATLAB script *openJSON.m* and change the following code,
 
