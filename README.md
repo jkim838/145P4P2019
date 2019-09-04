@@ -139,9 +139,7 @@ Before the program can be launched, configuration file and video footage must be
 
 #### 4.1. Downloading test footage
 
-Test video feed can be downloaded [feed 1](https://drive.google.com/open?id=1NkuDUWQ3L2HogRxnPCNDRRJIuqcBJxiB) [feed 2](https://drive.google.com/open?id=11GEhWhO2xAoFywc2sZ6Tfv4uWc8XB4WK) [feed 3](https://drive.google.com/open?id=1L47p2ucz9mkl99_TJt5xZ6LhCrIDzswi)
-
-Rename the downloaded video feed to *1.mp4*, *2.mp4*, *3.mp4* in order.
+Test video feed can be downloaded [feed 1](https://drive.google.com/a/aucklanduni.ac.nz/file/d/11DbnBG_t5Tyv-5L1mUAk4-CXi7P1IunO/view?usp=sharing) [feed 2](https://drive.google.com/a/aucklanduni.ac.nz/file/d/17Z0YiTIONWPNcTx-7_iVbtsURefJj_d0/view?usp=sharing) [feed 3](https://drive.google.com/a/aucklanduni.ac.nz/file/d/1lTpoba_gsLt-nPxb-FFMbl5VyYxBuswq/view?usp=sharing)
 
 Copy and paste the video files to *video_stream_opencv* folder, located at *~/catkin_ws/src/145P4P2019/video_stream_opencv*
 
@@ -166,6 +164,31 @@ roslaunch video_feed.launch
 ```
 roslaunch video_feed_nobag.launch
 ```
+
+  * to change the video feed, open the launch file, and change the path to the video file,
+  
+```
+<arg name="video_stream_provider" value="/$PATH_TO_FILE/VIDEOFILE_NAME.mp4" />
+```
+
+#### 4.3. Saving Statistics
+
+To save JSON output file, press *s* on the terminal.
+
+To exit program, press *ctrl+c*.
+
+### **5. Using MATLAB Script**
+
+To use MATLAB analyser script on JSON output file, move the JSON file to *MATLAB* folder.
+
+Open MATLAB script *openJSON.m* and change the following code,
+
+```
+% define name of file to be opened
+fname = '30fps-90sec-sample.json';
+```
+
+Run the script to generate statistics.
 
 ## Output Example
 ### Feed 1 Examples
