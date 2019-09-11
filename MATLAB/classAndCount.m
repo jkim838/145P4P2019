@@ -16,8 +16,8 @@ counts = histc(classes, unique(classes));
 figure(3)
 pie(counts);
 labels = {'Car','Bus','Truck'};
-legend(labels,'Location','southoutside','Orientation','horizontal');
-title('Percentage of vehicles of each type')
+legend(labels,'Location','southoutside','Orientation','horizontal','fontsize',22);
+title('Percentage of vehicles of each type','fontsize',24)
 
 
 figure(4)

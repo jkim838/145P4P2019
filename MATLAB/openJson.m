@@ -88,4 +88,4 @@ classAndCount(classes, frame, totalCount)
 
 %% Plot of lane changes
 %NOTE: this function is an incomplete proof of concept for lane changing
-%laneChanges(changes,IDs)
+laneChanges(changes,IDs)

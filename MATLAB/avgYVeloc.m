@@ -20,9 +20,9 @@ averageOfDataSet = mean(averageOfDataSet);
 % Plotting
 figure(1)
 stem(uniqueAvgVelocities(2,1:length(uniqueAvgVelocities)));
-title('Average Velocity of Each Vehicle');
-xlabel('ID');
-ylabel('Velocity (km/h)');
+title('Average Velocity of Each Vehicle','fontsize',24);
+xlabel('ID','fontsize',22);
+ylabel('Velocity (km/h)','fontsize',22);
 line([0 length(IDs)],[100 100],'Color','red','LineStyle','--') % speed limit
 line([0 length(IDs)], [averageOfDataSet averageOfDataSet],'Color','black','LineStyle','--')
 %text(length(IDs)-25,105,'Speed Limit','Color','red')
