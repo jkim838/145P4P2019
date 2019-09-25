@@ -16,6 +16,15 @@ The system shall make quantitative estimates of the traffic state based on the v
   * OS: Ubuntu 16.04 LTS
   * ROS: Kinetic
   * OpenCV: 3.3.1-dev (ROS Kinetic Install default)
+  
+  **DESKTOP**
+  * CPU: AMD Ryzen™ 7 1700X CPU @ 3.90 GHz
+  * GPU: nVidia GTX1080 8GB GP104
+  * nVidia Graphics Driver Version: 418.67
+  * CUDA Driver Version: 10.1
+  * Memory: 16GB
+  
+  **LAPTOP**
   * CPU: Intel(R) Core(TM) i7-6700HQ CPU @ 2.60 GHz
   * GPU: nVidia GTX1070 8GB GP104M (Mobile)
   * nVidia Graphics Driver Version: 418.67
