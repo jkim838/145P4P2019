@@ -200,10 +200,10 @@ fname = '30fps-90sec-sample.json';
 Run the script to generate statistics.
 
 ## Output Example
-### Feed 1 Examples
+### Live Interface View Example
 ![detection1a-030](Screenshot/demo_picture.png "Detection Example")
 
-
-
+### Statistics Output Example
+![statistics](Screenshot/combined_graph.png "Statistics Output Example")
 
 
