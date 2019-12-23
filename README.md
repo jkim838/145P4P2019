@@ -207,4 +207,5 @@ Run the script to generate statistics.
 ### Statistics Output Example
 ![statistics](Screenshot/combined_graph.png "Statistics Output Example")
 
-
+### Video Demo
+[Link](https://drive.google.com/open?id=1vYsceXIU5yYEBQFITFRuHwgn8lT5CI_x)
